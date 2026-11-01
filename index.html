@@ -164,6 +164,36 @@ h1,h2,h3{margin:0;text-wrap:balance}
 .weak .en{font-weight:600}
 .note{font-size:.8rem;color:var(--sub)}
 .sync{font-size:.75rem;color:var(--sub);text-align:center}
+/* pixel icons + titles */
+.emblem svg{width:46px;height:46px}
+.emblem{position:relative}
+.emblem .lvn{position:absolute;right:-6px;bottom:-6px;background:var(--n);color:#1b1400;font-family:var(--font-dot);font-size:.75rem;padding:1px 6px;border-radius:8px;border:2px solid var(--panel)}
+.titles{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:10px}
+.tcell{text-align:center;font-size:.62rem;line-height:1.3;color:var(--sub);min-width:0}
+.tcell .ic{width:54px;height:54px;margin:0 auto 4px;border-radius:14px;background:var(--soft);display:grid;place-items:center;border:2px solid var(--line)}
+.tcell .ic svg{width:40px;height:40px}
+.tcell.on{color:var(--ink);font-weight:800}
+.tcell.on .ic{border-color:var(--n);background:var(--n-soft)}
+.tcell.lock .ic svg{filter:brightness(0);opacity:.22}
+.tcell.now .ic{box-shadow:0 0 0 3px var(--accent)}
+.burst .spr svg{width:min(42vw,170px);height:auto;display:block;margin:0 auto 6px;image-rendering:pixelated}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:55;width:100%;height:100%}
+.stamp{animation:stampIn .35s ease-out}
+@keyframes stampIn{0%{transform:scale(1.8) rotate(-8deg);opacity:0}100%{transform:none;opacity:1}}
+/* explainer */
+.xstage{position:relative;background:var(--soft);border-radius:14px;padding:16px 10px 44px;display:flex;flex-direction:column;gap:14px}
+.xstage .seg{font-size:1.08rem}
+.xarrow{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.fig svg{width:100%;max-width:340px;height:auto;display:block;margin:0 auto}
+.cap{font-size:1.02rem;font-weight:700;line-height:1.7}
+.cap em{font-style:normal;background:var(--n-soft);padding:0 4px;border-radius:4px}
+.chip.gone{opacity:.25;text-decoration:line-through;text-decoration-thickness:2px}
+.chip.glow{animation:glow 1.2s ease-in-out 2}
+@keyframes glow{50%{transform:scale(1.15);box-shadow:0 0 0 6px color-mix(in srgb,var(--m) 35%,transparent)}}
+.chip.bad{background:var(--ng-soft);border-color:var(--ng)}.chip.bad small{color:var(--ng)}
+.xcard{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-align:left;width:100%}
+.xcard .ic{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;color:#fff;font-family:var(--font-dot)}
+@media (prefers-reduced-motion:reduce){.stamp,.chip.glow{animation:none}}
 /* word help */
 .w{cursor:pointer;border-bottom:1.5px dotted color-mix(in srgb,var(--sub) 70%,transparent);border-radius:3px}
 .w:hover{background:var(--accent-soft)}
@@ -270,7 +300,20 @@ add("s3",[
  o("私は英語の本がたくさんある図書館によく行きます。","I often go to/a library/which/has/a lot of English books","a library ← which has a lot of English books。","{S|I} {V|often go to} {N|a library} {M|which has a lot of English books}."),
  y("私には野球が好きな兄がいます。","I have a brother ___ likes baseball.","who,that","先行詞 a brother は人。who（または that）。","{S|I} {V|have} {N|a brother} {M|who likes baseball}."),
  y("これは私が描いた絵です。","This is the picture ___ I drew.","that,which","先行詞はもの。that か which。","This is {N|the picture} {M|that I drew}."),
- y("英語を教えている先生","the teacher ___ teaches English","who,that","人なので who か that。","{N|the teacher} {M|who teaches English}")
+ y("英語を教えている先生","the teacher ___ teaches English","who,that","人なので who か that。","{N|the teacher} {M|who teaches English}"),
+ /* ここから たてよこドリル No.35 の形に合わせた追加問題 */
+ o("私はこの絵をかいた男性に会いたいです。","I want to meet/the man/who/painted/this picture","文の中心は「会いたい」。だれに？→ the man。その説明 who painted this picture を最後に置く。|日本語は「この絵をかいた」が先だけど、英語は I want to meet が先頭に来る。|日本語の順に This picture から始めてしまう。","{S|I} {V|want to meet} {N|the man} {M|who painted this picture}."),
+ o("パイロットとは、飛行機を操縦する人です。","A pilot/is/someone/who/flies planes","「AとはBする人です」は A is someone who ～。someone（人）を who 以下が説明する。|日本語の「～とは」は、英語では「主語＋is」になる。|飛行機（planes）から始めてしまう。","{S|A pilot} {V|is} {N|someone} {M|who flies planes}."),
+ o("パン屋さんとは、パンを作る人です。","A baker/is/someone/who/makes bread","A is someone who ～ の形。someone の後ろに who makes bread。","{S|A baker} {V|is} {N|someone} {M|who makes bread}."),
+ o("あなたは中国語を話せる人をだれか知っていますか。","Do you know/anyone/who/can speak Chinese","anyone（だれか）を who can speak Chinese が後ろから説明。","Do you know {N|anyone} {M|who can speak Chinese}?"),
+ o("熱がある生徒がたくさんいます。","There are/many students/who/have/a fever","There are many students（生徒がたくさんいる）＋どんな生徒？→ who have a fever。","There are {N|many students} {M|who have a fever}."),
+ o("これは京都へ行く電車ですか。","Is this/the train/that/goes/to Kyoto","Is this ～? の疑問文。the train を that goes to Kyoto が説明。","Is this {N|the train} {M|that goes to Kyoto}?"),
+ o("テーブルの上にあったケーキはどこですか。","Where is/the cake/that/was/on the table","「どこですか」が先頭。Where is the cake のあと、どんなケーキ？→ that was on the table。","Where is {N|the cake} {M|that was on the table}?"),
+ o("私はハッピーエンドの本が好きです。","I like/books/which/have/happy endings","books を which have happy endings が説明。「ハッピーエンドを持っている本」。","{S|I} {V|like} {N|books} {M|which have happy endings}."),
+ o("これは20年前に人気だった歌です。","This is/a song/which/was popular/20 years ago","a song ← which was popular 20 years ago。","This is {N|a song} {M|which was popular 20 years ago}."),
+ o("彼はゲームを作る会社で働いています。","He works for/a company/that/makes/games","work for ～＝～で働く。a company ← that makes games。","{S|He} {V|works for} {N|a company} {M|that makes games}."),
+ c("(　)に入るのは？",["who","which"],"先行詞は someone（人）。A doctor is someone who ～＝医者とは～する人。",{en:"A doctor is someone (　) helps sick people.",seg:"{S|A doctor} {V|is} {N|someone} {M|who helps sick people}."}),
+ y("ぼくには北海道に住んでいるいとこがいます。","I have a cousin ___ lives in Hokkaido.","who,that","cousin（いとこ）は人なので who か that。","{S|I} {V|have} {N|a cousin} {M|who lives in Hokkaido}.")
 ]);
 
 add("s4",[
@@ -294,7 +337,22 @@ add("s4",[
  y("これは私が先週読んだ本です。","This is the book I ___ last week.","read","read の過去形は read（つづりは同じ、発音は「レッド」）。","This is {N|the book} {M|I read last week}."),
  y("あれは私たちが昨日見たネコです。","That is the cat we ___ yesterday.","saw","see の過去形は saw。","That is {N|the cat} {M|we saw yesterday}."),
  y("これは父が私にくれた時計です。","This is the watch my father ___ me.","gave","give の過去形は gave。","This is {N|the watch} {M|my father gave me}."),
- y("これは京子が買ったバッグです。","This is the bag Kyoko ___.","bought","buy の過去形は bought（ボート）。","This is {N|the bag} {M|Kyoko bought}.")
+ y("これは京子が買ったバッグです。","This is the bag Kyoko ___.","bought","buy の過去形は bought（ボート）。","This is {N|the bag} {M|Kyoko bought}."),
+ /* ここから たてよこドリル No.36・37 の形に合わせた追加問題 */
+ o("私が昨日見た映画はおもしろかった。","The movie/I saw/yesterday/was/interesting","主語のかたまりは The movie I saw yesterday まで。そのあとに文の動詞 was。|日本語の「私が昨日見た映画は」が1つの主語。英語も長い主語のかたまりになる。|was を yesterday の前に入れてしまう。","{N|The movie} {M|I saw yesterday} {V|was} interesting."),
+ o("ぼくが昨日やったゲームはわくわくした。","The game/I played/yesterday/was/exciting","主語のかたまり The game I played yesterday のあとに was。|日本語の「～は」までが主語のかたまり。|was を前に入れてしまう。","{N|The game} {M|I played yesterday} {V|was} exciting."),
+ o("彼女が歌った歌は美しかった。","The song/she sang/was/beautiful","The song she sang（彼女が歌った歌）が主語。そのあと was。","{N|The song} {M|she sang} {V|was} beautiful."),
+ o("父が買った自転車は青いです。","The bike/my father bought/is/blue","The bike my father bought までが主語。文の動詞は is。","{N|The bike} {M|my father bought} {V|is} blue."),
+ o("母が作るカレーはとてもおいしいです。","The curry/my mother makes/is/very good","The curry my mother makes（母が作るカレー）が主語。","{N|The curry} {M|my mother makes} {V|is} very good."),
+ o("あなたがさがしていたかぎは見つかりましたか。","Did you find/the key/you were looking for","Did you find ～? の疑問文。the key を you were looking for が説明。look for の for を最後に残す。","Did you find {N|the key} {M|you were looking for}?"),
+ o("ぼくにできることは何かありますか。","Is there/anything/I can do","Is there anything ～?（何か～はありますか）。anything を I can do（ぼくができる）が説明。","Is there {N|anything} {M|I can do}?"),
+ o("これは私が今まで食べた中で最高のラーメンです。","This is/the best ramen/I have ever/eaten","「今まで～した中で最高の…」は the best … I have ever ＋過去分詞。|日本語の「今まで食べた中で」が後ろに来る。|ever の位置をまちがえる。have と eaten の間に ever。","This is {N|the best ramen} {M|I have ever eaten}."),
+ o("あれはケンが好きな女の子ですか。","Is that/the girl/Ken/likes","Is that ～? の疑問文。the girl を Ken likes が説明。","Is that {N|the girl} {M|Ken likes}?"),
+ o("彼はだれもが知っているサッカー選手です。","He is/a soccer player/everyone/knows","a soccer player を everyone knows（みんなが知っている）が説明。","He is {N|a soccer player} {M|everyone knows}."),
+ o("彼女は私がずっと会いたかった歌手です。","She is/the singer/I have always/wanted to meet","have always wanted to ～＝ずっと～したかった。the singer を後ろから説明。","She is {N|the singer} {M|I have always wanted to meet}."),
+ c("正しい英文はどれ？「私が昨日見た映画はおもしろかった」",["The movie I saw yesterday was interesting.","The movie I was saw yesterday interesting.","The movie was I saw yesterday interesting.","I saw the movie yesterday was interesting."],"まず主語のかたまり The movie I saw yesterday を作り、そのあとに文の動詞 was。||was を主語のかたまりの中に入れてしまう。",{seg:"{N|The movie} {M|I saw yesterday} {V|was} interesting."}),
+ c("次の文で「文の動詞」はどれ？",["is","bought","The bike","my father"],"The bike my father bought までが主語のかたまり。そのあとの is が文の動詞。bought は説明の中の動詞。",{en:"The bike my father bought is blue.",seg:"{N|The bike} {M|my father bought} {V|is} blue."}),
+ y("これは姉が使っていた辞書です。","This is the dictionary my sister ___.","used","use の過去形は used。","This is {N|the dictionary} {M|my sister used}.")
 ]);
 
 add("s5",[
@@ -396,7 +454,7 @@ add("read",[
  c("マイが考える大切なことは？",["ちがう背景をもつ人が協力して目標を達成すること","サッカーが上手になること","外国語を勉強すること","大会で勝ちつづけること"],"最後の段落。People with different backgrounds can work together and achieve a goal.",{p:"p3"})
 ]);
 
-const GLOSS={"a":"1つの（数えられるものの前）","about":"～について","accept":"受け入れる","achieve":"達成する","after":"～のあとで","ago":"（今から）～前に","also":"～もまた","always":"いつも","am":"～です（I のとき）","an":"1つの（母音の前の a）","and":"～と、そして","anger":"怒り","animal":"動物","animals":"動物（animal の複数形）","anime":"アニメ","another":"もう1つの、別の","are":"～です、～がいる（you / we / they / 複数のとき）","around":"～のまわりに、～中で","as":"～として","asked":"ask（たずねる・頼む）の過去形","at":"～で（場所・時刻）","backgrounds":"生い立ち、背景（複数形）","bag":"かばん","bags":"かばん（複数形）","baked":"bake（焼く）の過去形","ball":"ボール","balls":"ボール（複数形）、rice balls＝おにぎり","baseball":"野球","be":"～である（is / am / are のもとの形）","beautiful":"美しい","became":"become（～になる）の過去形","because":"なぜなら、～なので","before":"～の前に","belong":"所属する（belong to ～）","bench":"ベンチ","best":"いちばん（like ～ the best＝～がいちばん好き）","better":"よりよい（feel better＝気分がよくなる）","big":"大きい","bike":"自転車","bird":"鳥","blue":"青い","book":"本","books":"本（複数形）","bought":"buy（買う）の過去形","boy":"少年","brazil":"ブラジル（国名）","brings":"bring（持ってくる）、bring together＝まとめる・一つにする","brother":"兄、弟","build":"建てる","built":"build（建てる）の過去形・過去分詞（建てられた）","bus":"バス","but":"しかし","buy":"買う","by":"～によって、～のそばに","cake":"ケーキ","can":"～できる","can't":"～できない（can not）","car":"車","carrying":"carry（運ぶ・持つ）の ing 形","castle":"城","cat":"ネコ","cats":"ネコ（複数形）","central":"中心的な","changed":"change（変える）の過去形","children's":"子どもたちの（Children's Day＝こどもの日）","china":"中国","chofu":"調布（地名）","city":"市、都市","class":"クラス","club":"クラブ","come":"来る","concert":"コンサート","contact":"連絡をとる","cookies":"クッキー（複数形）","costume":"衣装","couldn't":"～できなかった（could not）","countries":"国（country の複数形）","create":"創り出す","cute":"かわいい","day":"日","delicious":"とてもおいしい","design":"デザイン、設計","designed":"design（設計する）の過去分詞（設計された）","differences":"ちがい（複数形）","different":"ちがう、いろいろな","diversity":"多様性","do":"する（疑問文・否定文をつくる言葉としても使う）","doctor":"医者","dog":"イヌ","doing":"do（する）の ing 形","don't":"～しない（do not）","door":"ドア","drew":"draw（描く）の過去形","early":"早く","ears":"耳（複数形）","easily":"簡単に","easy":"簡単な、やさしい","eat":"食べる","eating":"eat の ing 形","elevator":"エレベーター","emotion":"感情","english":"英語","enjoy":"楽しむ","every":"毎～、すべての","everyone":"みんな","evolution":"進化","eyes":"目（複数形）","fair":"公平な","fast":"速く","father":"父","feel":"感じる","festival":"祭り、文化祭","fifteen":"15","finally":"ついに","find":"見つける","fireworks":"花火","first":"最初に、最初の","flying":"fly（飛ぶ）の ing 形","for":"～のために、～の間","forget":"忘れる","french":"フランス語","friend":"友達","friends":"友達（複数形）","from":"～から、～出身の","fruit":"果物","furoshiki":"ふろしき","future":"未来、将来","game":"ゲーム、試合","gave":"give（あげる）の過去形","gestures":"身ぶり（複数形）","girl":"女の子","glad":"うれしい","go":"行く","goal":"目標","goes":"go（行く）の三単現","good":"よい、上手な","grandfather":"祖父","grandmother":"祖母","guitar":"ギター","had":"have（持つ）の過去形","hands":"手（複数形）","happy":"幸せな、うれしい","has":"have（持つ）の三単現","have":"持っている、飼っている（have to＝～しなければならない）","he":"彼は","heal":"いやす","hear":"聞く、聞こえる","heavy":"重い","hello":"こんにちは","help":"手伝う、助ける","helped":"help の過去形","helps":"help の三単現","her":"彼女を、彼女の","hi":"やあ","him":"彼を、彼に","hokusai":"北斎（人名）","homework":"宿題","house":"家","i":"私は","i'm":"私は～です（I am）","idea":"考え","important":"大切な","in":"～の中に、～で","is":"～です、～がある・いる（he / she / it / 1つのもの）","it":"それ","it's":"それは～です（it is）","japan":"日本","japanese":"日本の、日本語、日本人","judo":"柔道","just":"ちょうど、ただ～だけ","key":"かぎ","know":"知っている","knows":"know の三単現","language":"言語、言葉","languages":"言語（複数形）","large":"大きい","last":"この前の（last year＝去年）","late":"遅れた","learned":"learn（学ぶ）の過去形","leave":"去る、出発する","letter":"手紙","library":"図書館","life":"人生、生活","like":"好きだ、～のような","likes":"like の三単現","listen":"聞く（listen to ～）","little":"小さい（little by little＝少しずつ）","lives":"live（住む）の三単現","long":"長い","look":"見る（look at ～＝～を見る、look for ～＝～をさがす）","looking":"look の ing 形（looking for＝さがしている）","lost":"lose（なくす）の過去形","lot":"たくさん（a lot of ～＝たくさんの～）","loved":"love（愛する）の過去分詞（愛されている）","made":"make（作る）の過去形・過去分詞（作られた）","make":"作る、（人を）～にする","makes":"make の三単現","man":"男性","many":"たくさんの","matsuri":"祭り","may":"5月","me":"私を、私に","met":"meet（会う）の過去形","minutes":"分（時間の単位、複数形）","month":"月、1か月","more":"もっと","morning":"朝","most":"いちばん","mother":"母","movie":"映画","ms":"～さん、～先生（女性）","music":"音楽","must":"～しなければならない","my":"私の","near":"～の近くに","never":"決して～ない","news":"知らせ、ニュース","next":"となりの、次の","not":"～ない","of":"～の","often":"よく、しばしば","okinawa":"沖縄","on":"～の上に、～（曜日・日付）に","one":"1つ、1人","osaka":"大阪","our":"私たちの","panda":"パンダ","pandas":"パンダ（複数形）","parents":"両親","park":"公園","pen":"ペン","people":"人々","phone":"電話、スマホ","piano":"ピアノ","picture":"写真、絵","pictures":"写真、絵（複数形）","pilot":"パイロット","place":"場所","play":"（スポーツを）する、（楽器を）弾く、遊ぶ","player":"選手","players":"選手（複数形）","playing":"play の ing 形","plays":"play の三単現","pochi":"ポチ（イヌの名前）","popular":"人気のある","practiced":"practice（練習する）の過去形","practicing":"practice の ing 形","print":"版画","quiet":"静かな","read":"読む（過去形も read、発音は「レッド」）","red":"赤い","remember":"覚えている","rice":"米、ごはん","right":"正しい","running":"run（走る）の ing 形","runs":"run（走る）の三単現","sad":"悲しい","sadness":"悲しみ","same":"同じ","sang":"sing（歌う）の過去形","save":"救う","saw":"see（見る）の過去形","school":"学校","see":"見る、会う","share":"分かち合う","she":"彼女は","shop":"店","show":"見せる","signs":"表示、標識（複数形）","sing":"歌う","singer":"歌手","singing":"sing の ing 形","sister":"姉、妹","sleeping":"sleep（眠る）の ing 形","sleeve":"そで","smile":"笑顔","so":"だから、とても","soccer":"サッカー","some":"いくつかの、何人かの","something":"何か","song":"歌","songs":"歌（複数形）","speak":"話す","speaks":"speak の三単現","spoken":"speak（話す）の過去分詞（話されている）","standing":"stand（立つ）の ing 形","station":"駅","stop":"やめる、止まる","students":"生徒（複数形）","study":"勉強する","studying":"study の ing 形","subject":"教科","success":"成功","summer":"夏","sure":"確信して（I'm sure ～＝きっと～だと思う）","sushi":"すし","table":"テーブル","take":"（写真を）撮る、持っていく","taken":"take の過去分詞（撮られた）","taking":"take の ing 形","talk":"話す","talking":"talk の ing 形","taught":"teach（教える）の過去形","teacher":"先生","teaches":"teach（教える）の三単現","team":"チーム","tennis":"テニス","that":"あれ、その／（関係代名詞）前の名詞の説明が始まる合図","that's":"それは～です（that is）","the":"その（決まったものの前）","them":"彼らを、それらを","there":"そこに（There is / are ～＝～がある・いる）","these":"これらの","they":"彼らは、それらは","things":"もの、こと（複数形）","think":"思う","this":"これ、この","three":"3","time":"時間（It's time to ～＝～する時間です）","to":"～へ、～に／（to＋動詞）～すること・～するために","together":"一緒に","told":"tell（言う）の過去形","too":"～も（文の最後）","took":"take（撮る）の過去形","tournament":"大会","town":"町","translate":"翻訳する","uncle":"おじ","understand":"理解する","universal":"すべての人のための（universal design＝ユニバーサルデザイン）","up":"上へ（wake up＝起きる・起こす）","us":"私たちを、私たちに","use":"使う","used":"use の過去形","very":"とても","visit":"訪れる","wake":"起こす、目覚める（wake up）","want":"ほしい、～したい（want 人 to ～＝人に～してほしい）","wants":"want の三単現","was":"～だった（is の過去形）","watch":"時計、見る","watched":"watch（見る）の過去形・過去分詞（見られている）","we":"私たちは","week":"週","well":"上手に","went":"go（行く）の過去形","were":"～だった（are の過去形）","what":"何","wheelchairs":"車いす（複数形）","when":"～のとき、いつ","which":"どちら／（関係代名詞）もの・動物の説明が始まる合図","white":"白い","who":"だれ／（関係代名詞）人の説明が始まる合図","will":"～するつもりだ、～だろう","win":"勝つ、優勝する","window":"窓","with":"～と一緒に、～を持った、～で","won":"win（勝つ）の過去形","work":"働く、協力して取り組む","works":"work の三単現","world":"世界","write":"書く","writing":"write の ing 形","written":"write の過去分詞（書かれた）","wrote":"write の過去形","year":"年","years":"年（複数形）","yes":"はい","yesterday":"昨日","you":"あなたは、あなたを","your":"あなたの","kotatsu":"こたつ","shamisen":"三味線","athlete":"運動選手","tempo":"テンポ、速さ","listener":"聞き手","original":"独創的な","technology":"科学技術","nowadays":"近ごろは","aware":"気づいている（be aware of ～）","deal":"対処する（deal with ～）","able":"できる（be able to ～）","suffer":"苦しむ（suffer from ～）","facility":"設備、施設","flea":"ノミ（flea market＝フリーマーケット）","market":"市場","recognize":"認識する、それとわかる"};
+const GLOSS={"a":"1つの（数えられるものの前）","about":"～について","accept":"受け入れる","achieve":"達成する","after":"～のあとで","ago":"（今から）～前に","also":"～もまた","always":"いつも","am":"～です（I のとき）","an":"1つの（母音の前の a）","and":"～と、そして","anger":"怒り","animal":"動物","animals":"動物（animal の複数形）","anime":"アニメ","another":"もう1つの、別の","are":"～です、～がいる（you / we / they / 複数のとき）","around":"～のまわりに、～中で","as":"～として","asked":"ask（たずねる・頼む）の過去形","at":"～で（場所・時刻）","backgrounds":"生い立ち、背景（複数形）","bag":"かばん","bags":"かばん（複数形）","baked":"bake（焼く）の過去形","ball":"ボール","balls":"ボール（複数形）、rice balls＝おにぎり","baseball":"野球","be":"～である（is / am / are のもとの形）","beautiful":"美しい","became":"become（～になる）の過去形","because":"なぜなら、～なので","before":"～の前に","belong":"所属する（belong to ～）","bench":"ベンチ","best":"いちばん（like ～ the best＝～がいちばん好き）","better":"よりよい（feel better＝気分がよくなる）","big":"大きい","bike":"自転車","bird":"鳥","blue":"青い","book":"本","books":"本（複数形）","bought":"buy（買う）の過去形","boy":"少年","brazil":"ブラジル（国名）","brings":"bring（持ってくる）、bring together＝まとめる・一つにする","brother":"兄、弟","build":"建てる","built":"build（建てる）の過去形・過去分詞（建てられた）","bus":"バス","but":"しかし","buy":"買う","by":"～によって、～のそばに","cake":"ケーキ","can":"～できる","can't":"～できない（can not）","car":"車","carrying":"carry（運ぶ・持つ）の ing 形","castle":"城","cat":"ネコ","cats":"ネコ（複数形）","central":"中心的な","changed":"change（変える）の過去形","children's":"子どもたちの（Children's Day＝こどもの日）","china":"中国","chofu":"調布（地名）","city":"市、都市","class":"クラス","club":"クラブ","come":"来る","concert":"コンサート","contact":"連絡をとる","cookies":"クッキー（複数形）","costume":"衣装","couldn't":"～できなかった（could not）","countries":"国（country の複数形）","create":"創り出す","cute":"かわいい","day":"日","delicious":"とてもおいしい","design":"デザイン、設計","designed":"design（設計する）の過去分詞（設計された）","differences":"ちがい（複数形）","different":"ちがう、いろいろな","diversity":"多様性","do":"する（疑問文・否定文をつくる言葉としても使う）","doctor":"医者","dog":"イヌ","doing":"do（する）の ing 形","don't":"～しない（do not）","door":"ドア","drew":"draw（描く）の過去形","early":"早く","ears":"耳（複数形）","easily":"簡単に","easy":"簡単な、やさしい","eat":"食べる","eating":"eat の ing 形","elevator":"エレベーター","emotion":"感情","english":"英語","enjoy":"楽しむ","every":"毎～、すべての","everyone":"みんな","evolution":"進化","eyes":"目（複数形）","fair":"公平な","fast":"速く","father":"父","feel":"感じる","festival":"祭り、文化祭","fifteen":"15","finally":"ついに","find":"見つける","fireworks":"花火","first":"最初に、最初の","flying":"fly（飛ぶ）の ing 形","for":"～のために、～の間","forget":"忘れる","french":"フランス語","friend":"友達","friends":"友達（複数形）","from":"～から、～出身の","fruit":"果物","furoshiki":"ふろしき","future":"未来、将来","game":"ゲーム、試合","gave":"give（あげる）の過去形","gestures":"身ぶり（複数形）","girl":"女の子","glad":"うれしい","go":"行く","goal":"目標","goes":"go（行く）の三単現","good":"よい、上手な","grandfather":"祖父","grandmother":"祖母","guitar":"ギター","had":"have（持つ）の過去形","hands":"手（複数形）","happy":"幸せな、うれしい","has":"have（持つ）の三単現","have":"持っている、飼っている（have to＝～しなければならない）","he":"彼は","heal":"いやす","hear":"聞く、聞こえる","heavy":"重い","hello":"こんにちは","help":"手伝う、助ける","helped":"help の過去形","helps":"help の三単現","her":"彼女を、彼女の","hi":"やあ","him":"彼を、彼に","hokusai":"北斎（人名）","homework":"宿題","house":"家","i":"私は","i'm":"私は～です（I am）","idea":"考え","important":"大切な","in":"～の中に、～で","is":"～です、～がある・いる（he / she / it / 1つのもの）","it":"それ","it's":"それは～です（it is）","japan":"日本","japanese":"日本の、日本語、日本人","judo":"柔道","just":"ちょうど、ただ～だけ","key":"かぎ","know":"知っている","knows":"know の三単現","language":"言語、言葉","languages":"言語（複数形）","large":"大きい","last":"この前の（last year＝去年）","late":"遅れた","learned":"learn（学ぶ）の過去形","leave":"去る、出発する","letter":"手紙","library":"図書館","life":"人生、生活","like":"好きだ、～のような","likes":"like の三単現","listen":"聞く（listen to ～）","little":"小さい（little by little＝少しずつ）","lives":"live（住む）の三単現","long":"長い","look":"見る（look at ～＝～を見る、look for ～＝～をさがす）","looking":"look の ing 形（looking for＝さがしている）","lost":"lose（なくす）の過去形","lot":"たくさん（a lot of ～＝たくさんの～）","loved":"love（愛する）の過去分詞（愛されている）","made":"make（作る）の過去形・過去分詞（作られた）","make":"作る、（人を）～にする","makes":"make の三単現","man":"男性","many":"たくさんの","matsuri":"祭り","may":"5月","me":"私を、私に","met":"meet（会う）の過去形","minutes":"分（時間の単位、複数形）","month":"月、1か月","more":"もっと","morning":"朝","most":"いちばん","mother":"母","movie":"映画","ms":"～さん、～先生（女性）","music":"音楽","must":"～しなければならない","my":"私の","near":"～の近くに","never":"決して～ない","news":"知らせ、ニュース","next":"となりの、次の","not":"～ない","of":"～の","often":"よく、しばしば","okinawa":"沖縄","on":"～の上に、～（曜日・日付）に","one":"1つ、1人","osaka":"大阪","our":"私たちの","panda":"パンダ","pandas":"パンダ（複数形）","parents":"両親","park":"公園","pen":"ペン","people":"人々","phone":"電話、スマホ","piano":"ピアノ","picture":"写真、絵","pictures":"写真、絵（複数形）","pilot":"パイロット","place":"場所","play":"（スポーツを）する、（楽器を）弾く、遊ぶ","player":"選手","players":"選手（複数形）","playing":"play の ing 形","plays":"play の三単現","pochi":"ポチ（イヌの名前）","popular":"人気のある","practiced":"practice（練習する）の過去形","practicing":"practice の ing 形","print":"版画","quiet":"静かな","read":"読む（過去形も read、発音は「レッド」）","red":"赤い","remember":"覚えている","rice":"米、ごはん","right":"正しい","running":"run（走る）の ing 形","runs":"run（走る）の三単現","sad":"悲しい","sadness":"悲しみ","same":"同じ","sang":"sing（歌う）の過去形","save":"救う","saw":"see（見る）の過去形","school":"学校","see":"見る、会う","share":"分かち合う","she":"彼女は","shop":"店","show":"見せる","signs":"表示、標識（複数形）","sing":"歌う","singer":"歌手","singing":"sing の ing 形","sister":"姉、妹","sleeping":"sleep（眠る）の ing 形","sleeve":"そで","smile":"笑顔","so":"だから、とても","soccer":"サッカー","some":"いくつかの、何人かの","something":"何か","song":"歌","songs":"歌（複数形）","speak":"話す","speaks":"speak の三単現","spoken":"speak（話す）の過去分詞（話されている）","standing":"stand（立つ）の ing 形","station":"駅","stop":"やめる、止まる","students":"生徒（複数形）","study":"勉強する","studying":"study の ing 形","subject":"教科","success":"成功","summer":"夏","sure":"確信して（I'm sure ～＝きっと～だと思う）","sushi":"すし","table":"テーブル","take":"（写真を）撮る、持っていく","taken":"take の過去分詞（撮られた）","taking":"take の ing 形","talk":"話す","talking":"talk の ing 形","taught":"teach（教える）の過去形","teacher":"先生","teaches":"teach（教える）の三単現","team":"チーム","tennis":"テニス","that":"あれ、その／（関係代名詞）前の名詞の説明が始まる合図","that's":"それは～です（that is）","the":"その（決まったものの前）","them":"彼らを、それらを","there":"そこに（There is / are ～＝～がある・いる）","these":"これらの","they":"彼らは、それらは","things":"もの、こと（複数形）","think":"思う","this":"これ、この","three":"3","time":"時間（It's time to ～＝～する時間です）","to":"～へ、～に／（to＋動詞）～すること・～するために","together":"一緒に","told":"tell（言う）の過去形","too":"～も（文の最後）","took":"take（撮る）の過去形","tournament":"大会","town":"町","translate":"翻訳する","uncle":"おじ","understand":"理解する","universal":"すべての人のための（universal design＝ユニバーサルデザイン）","up":"上へ（wake up＝起きる・起こす）","us":"私たちを、私たちに","use":"使う","used":"use の過去形","very":"とても","visit":"訪れる","wake":"起こす、目覚める（wake up）","want":"ほしい、～したい（want 人 to ～＝人に～してほしい）","wants":"want の三単現","was":"～だった（is の過去形）","watch":"時計、見る","watched":"watch（見る）の過去形・過去分詞（見られている）","we":"私たちは","week":"週","well":"上手に","went":"go（行く）の過去形","were":"～だった（are の過去形）","what":"何","wheelchairs":"車いす（複数形）","when":"～のとき、いつ","which":"どちら／（関係代名詞）もの・動物の説明が始まる合図","white":"白い","who":"だれ／（関係代名詞）人の説明が始まる合図","will":"～するつもりだ、～だろう","win":"勝つ、優勝する","window":"窓","with":"～と一緒に、～を持った、～で","won":"win（勝つ）の過去形","work":"働く、協力して取り組む","works":"work の三単現","world":"世界","write":"書く","writing":"write の ing 形","written":"write の過去分詞（書かれた）","wrote":"write（書く）の過去形","year":"年","years":"年（複数形）","yes":"はい","yesterday":"昨日","you":"あなたは、あなたを","your":"あなたの","kotatsu":"こたつ","shamisen":"三味線","athlete":"運動選手","tempo":"テンポ、速さ","listener":"聞き手","original":"独創的な","technology":"科学技術","nowadays":"近ごろは","aware":"気づいている（be aware of ～）","deal":"対処する（deal with ～）","able":"できる（be able to ～）","suffer":"苦しむ（suffer from ～）","facility":"設備、施設","flea":"ノミ（flea market＝フリーマーケット）","market":"市場","recognize":"認識する、それとわかる","painted":"paint（絵の具でかく）の過去形","flies":"fly（飛ぶ・操縦する）の三単現","planes":"飛行機（複数形）","baker":"パン屋さん、パン職人","bread":"パン","chinese":"中国語、中国の","fever":"熱","train":"電車","endings":"終わり、結末（happy endings＝ハッピーエンド）","company":"会社","games":"ゲーム（複数形）","sick":"病気の","cousin":"いとこ","hokkaido":"北海道（地名）","played":"play の過去形","exciting":"わくわくさせる","curry":"カレー","ramen":"ラーメン","ever":"今までに（have ever ～＝今までに～したことがある）","eaten":"eat（食べる）の過去分詞","wanted":"want の過去形・過去分詞","meet":"会う","dictionary":"辞書","architect":"建築家","someone":"だれか、人","designs":"design（設計する）の三単現","buildings":"建物（複数形）","interesting":"おもしろい","anyone":"だれか（疑問文で）","anything":"何か（疑問文で）","woman":"女性","where":"どこ","did":"do の過去形（過去の疑問文・否定文をつくる）"};
 const NAMES={"aya": "アヤ（人名）", "daichi": "大地（人名）", "emma": "エマ（人名）", "ito": "伊藤（人名）", "jim": "ジム（人名）", "kei": "ケイ（人名）", "ken": "ケン（人名）", "kenta": "健太（人名）", "kyoko": "京子（人名）", "kyoto": "京都（地名）", "mai": "マイ（人名）", "meg": "メグ（人名）", "mika": "ミカ（人名）", "sato": "佐藤（人名）", "sanja": "三社（浅草の三社祭）", "yuta": "ユウタ（人名）", "korea": "韓国（国名）", "katsushika": "葛飾（人名・地名）"};
 /* ===== ステージの学習スライド ===== */
 const LESSONS = {
@@ -455,6 +513,126 @@ const BADGES=[
  {k:"first",nm:"はじめの一歩"},{k:"st3",nm:"3日連続"},{k:"st7",nm:"7日連続"},{k:"perfect",nm:"パーフェクト"},
  {k:"combo10",nm:"10コンボ"},{k:"m_s2",nm:"後ろ説明★"},{k:"m_s3",nm:"関係代名詞★"},{k:"m_s4",nm:"接触節★"},{k:"m_s5",nm:"want人to★"},{k:"q200",nm:"200問回答"}
 ];
+
+/* ===== 称号のドット絵アイコン（12×12） ===== */
+const PAL={o:"#2a2440",w:"#ffffff",s:"#9fb0d6",y:"#ffd23f",k:"#1e1e28",r:"#ff6b4a",g:"#a8e6ff",b:"#9a6233",m:"#b8c2d6",n:"#ffc53d",v:"#ff5a5f",t:"#2fc28f",u:"#4f86ff"};
+const SPRITES=[
+ ["....oooo....","...owwwwo...","..owwwwwwo..","..owwyywwo..",".owwwyywwwo.",".owwwwwwwwo.",".owywwwwwwo.",".owwwwwsswo.",".owwwwwwswo.","..owwwwwso..","...osssso...","....oooo...."],
+ ["....oooo....","...oyyyyo...","..oyykyyyo..","..oyyyyyrrr.","..oyyyyyyo..",".woyyyyyyow.",".wwoooooooww",".wwwwwwwwwww","..wwwwwwwww.","..wsswwssww.","...wwwwwww..","....wwwww..."],
+ ["...oooo.....","..oggggo....",".oggwwggo...",".ogwggggo...",".oggggggo...",".oggggggo...","..oggggo....","...oooobb...",".......bbb..","........bbb.",".........bb.","............"],
+ ["..mmmmmmm...",".mmmmmmmmm..",".mmmwmmmmm..",".mmmmmmmmm..","..mmmmmmm...",".....bb.....",".....bb.....",".....bb.....",".....bb.....",".....bb.....",".....bb.....","....bbbb...."],
+ ["....nnnn....","....nnnn....","...vvvvvv...","...vvvvvv...","..uuuutttt..","..uuuutttt..","..ttttuuuu..","..ttttuuuu..",".nnnnnvvvvv.",".nnnnnvvvvv.",".oooooooooo.","............"],
+ ["............","..t.........",".tt.........","ttttttttt...",".tt......t..","..t.......t.","...........t","...........t","..........t.",".........t..","..ttttttt...","............"],
+ [".....rr.....","....rrr.....","...mmmmmm...","..mmmmmmmm..","..mmmmmmmm..","..kkkkkkkk..","..mmmkkmmm..","..mmmkkmmm..","..mmmmmmmm..","...mmmmmm...","....mmmm....","............"],
+ ["............",".oo......oo.",".owoo..oowo.",".owwwoowwwo.",".owsswwsswo.",".owwwwwwwwo.",".owsswwsswo.",".owwwwwwwwo.",".owsswwsswo.",".oowwwwwwoo.","bbooooooooob","............"],
+ ["....oooo....","..oowwwwoo..",".owwwkkwwwo.",".owwkkkkwwo.","owwwwkkwwwwo","okwwwwwwwwko","okkwwwwwwkko","owwwwkkwwwwo",".owwkkkkwwo.",".owwwkkwwwo.","..oowwwwoo..","....oooo...."],
+ ["............","............",".n...n...n..",".nn.nnn.nn..",".nnnnnnnnn..",".nnrnnrnnrn.",".nnnnnnnnnn.",".nnnnnnnnnn.",".oooooooooo.","............","............","............"],
+ [".nnnnnnnnnn.","nnwnnnnnnnnn","n.nnnnnnnn.n","n.nnnnnnnn.n",".nnnnnnnnnn.","..nnnnnnnn..","....nnnn....",".....nn.....",".....nn.....","....nnnn....","...oooooo...","...oooooo..."]
+];
+function sprite(i){
+  const g=SPRITES[Math.min(i,SPRITES.length-1)];let r="";
+  g.forEach((row,yy)=>{for(let xx=0;xx<12;xx++){const ch=row[xx];if(ch&&ch!=="."&&PAL[ch])r+=`<rect x="${xx}" y="${yy}" width="1.02" height="1.02" fill="${PAL[ch]}"/>`}});
+  return`<svg viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
+}
+/* ===== 紙吹雪 ===== */
+function confetti(){
+  try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return}catch(e){}
+  let c=document.getElementById("confetti");if(!c){c=document.createElement("canvas");c.id="confetti";document.body.appendChild(c)}
+  const W=c.width=innerWidth,H=c.height=innerHeight,x=c.getContext("2d");
+  const cols=["#4f86ff","#ff5a5f","#ffc53d","#2fc28f","#9d86ff"];
+  const P=Array.from({length:90},()=>({x:W/2+(Math.random()-.5)*W*.3,y:H*.35,vx:(Math.random()-.5)*9,vy:-Math.random()*9-3,s:4+Math.random()*5,c:cols[Math.floor(Math.random()*5)],a:Math.random()*6}));
+  let t=0;(function f(){x.clearRect(0,0,W,H);P.forEach(p=>{p.vy+=.25;p.x+=p.vx;p.y+=p.vy;p.a+=.2;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);x.restore()});if(++t<110)requestAnimationFrame(f);else x.clearRect(0,0,W,H)})();
+}
+
+/* ===== 図でふりかえり ===== */
+const ch=(r,t,lab,extra)=>`<span class="chip ${r}${extra&&extra.cls?" "+extra.cls:""}"${extra&&extra.af?' data-af="1"':""}${extra&&extra.at?' data-at="1"':""}>${wrapEn(t)}<small>${lab||ROLE[r]||"&nbsp;"}</small></span>`;
+const row=(...a)=>`<div class="seg">${a.join("")}</div>`;
+const FIG={
+ person:(x,y,c,flip)=>`<g transform="translate(${x},${y})"><circle cx="0" cy="0" r="13" fill="${c}"/><circle cx="${flip?-4:4}" cy="-2" r="2" fill="#1e1e28"/><rect x="-14" y="16" width="28" height="36" rx="10" fill="${c}"/><rect x="-11" y="50" width="8" height="22" rx="4" fill="${c}"/><rect x="3" y="50" width="8" height="22" rx="4" fill="${c}"/></g>`,
+ ball:(x,y)=>`<g transform="translate(${x},${y})"><circle r="11" fill="#fff" stroke="#1e1e28" stroke-width="2"/><path d="M-4-4l4-3 4 3-1.5 5h-5z" fill="#1e1e28"/></g>`,
+ book:(x,y)=>`<g transform="translate(${x},${y})"><rect x="-16" y="-12" width="32" height="24" rx="3" fill="var(--n)"/><rect x="-12" y="-8" width="24" height="16" rx="2" fill="#fff"/><line x1="0" y1="-8" x2="0" y2="8" stroke="var(--n)" stroke-width="2"/></g>`
+};
+const svgw=(inner,h)=>`<svg viewBox="0 0 340 ${h||170}" role="img">${inner}</svg>`;
+const T=(x,y,t,c,sz,w)=>`<text x="${x}" y="${y}" text-anchor="middle" font-size="${sz||13}" font-weight="${w||700}" fill="${c||"var(--ink)"}" font-family="M PLUS Rounded 1c, sans-serif">${t}</text>`;
+let _EX=null;
+function EXP(){return _EX||(_EX={
+ s1:{nm:"文の骨組み",steps:[
+  {fig:svgw(T(170,22,"日本語の電車","var(--sub)",12)+[["私は","var(--s)"],["サッカーが","var(--sub)"],["好き","var(--v)"]].map((a,i)=>`<rect x="${20+i*105}" y="30" width="95" height="38" rx="8" fill="${a[1]}" opacity=".9"/>${T(67+i*105,55,a[0],"#fff",14)}`).join("")+T(170,98,"英語の電車","var(--sub)",12)+[["I","var(--s)"],["like","var(--v)"],["soccer","var(--sub)"]].map((a,i)=>`<rect x="${20+i*105}" y="106" width="95" height="38" rx="8" fill="${a[1]}" opacity=".9"/>${T(67+i*105,131,a[0],"#fff",15)}`).join("")+`<path d="M275 72 Q 200 92 158 104" stroke="var(--v)" stroke-width="3" fill="none" stroke-dasharray="5 4" marker-end="url(#ah)"/>`,160),
+   cap:"日本語は「好き（どうする）」が<em>最後</em>。英語は「like（どうする）」が<em>2番目</em>に引っこしてくる。"},
+  {html:row(ch("S","Ken"),ch("V","plays"),ch("X","soccer","なにを"),ch("X","in the park","どこで"),ch("X","every day","いつ")),cap:"だれが → どうする → なにを → どこで → いつ。この順番の電車はほとんど変わらないよ。"}
+ ]},
+ s2:{nm:"名詞を後ろから説明",steps:[
+  {fig:svgw(FIG.person(90,40,"var(--s)")+FIG.ball(116,82)+`<rect x="52" y="20" width="82" height="128" rx="14" fill="none" stroke="var(--m)" stroke-width="3" stroke-dasharray="7 5"/>`+FIG.person(250,40,"var(--sub)",1)+T(93,165,"ボールを持った少年","var(--m)",13)+T(250,165,"ふつうの少年","var(--sub)",12),175),cap:"少年が2人。どっちの少年？ → <em>ボールを持った</em>ほうの少年。"},
+  {html:row(ch("N","the boy",null,{at:1}),ch("M","with a ball","↩ 後ろから説明",{af:1})),cap:"英語は、まず<em>the boy（少年）</em>と言ってから、「ボールを持った」をあとから付け足す。矢印のように後ろから説明する。"},
+  {html:row(ch("N","The boy",null,{at:1}),ch("M","with a ball",null,{af:1}),ch("V","is"),ch("X","Yuta.")),cap:"説明つきの名詞をひとかたまりで見ると、文の動詞 <em>is</em> が見つかる。「ボールを持った少年は、ユウタです」。"},
+  {html:row(ch("N","the boy",null,{at:1}),ch("M","playing soccer","～している",{af:1}))+row(ch("N","a picture"),ch("M","taken by Masaru","～された")),cap:"「～している」は ing、「～された」は過去分詞。形がちがっても、<em>名詞 → 説明</em>の順番は同じ。"}
+ ]},
+ s3:{nm:"関係代名詞",steps:[
+  {fig:svgw(FIG.person(110,40,"var(--s)")+`<path d="M135 80 h60" stroke="var(--sub)" stroke-width="3" stroke-dasharray="4 6"/><path d="M200 70 h40 M205 82 h50 M200 94 h36" stroke="var(--m)" stroke-width="4" stroke-linecap="round"/>`+T(110,160,"a friend（友達）","var(--n)",13)+T(240,130,"速く走れる！","var(--m)",13),170),
+   html:`<div>${row(ch("S","I"),ch("V","have"),ch("N","a friend.","友達がいる"))}</div><div>${row(ch("S","He","彼は"),ch("X","can run fast.","速く走れる"))}</div>`,cap:"2つの文があるよ。「私には友達がいる」「彼は速く走れる」。"},
+  {html:`<div>${row(ch("X","I have"),ch("N","a friend.","＝同じ人",{at:1}))}</div><div>${row(ch("S","He","＝a friend",{af:1}),ch("X","can run fast."))}</div>`,cap:"<em>He</em> は <em>a friend</em> のこと。同じ人を2回言っているね。"},
+  {html:row(ch("X","I have"),ch("N","a friend",null,{at:1}),ch("M","who","He が変身！",{af:1,cls:"glow"}),ch("X","can run fast.")),cap:"He が <em>who</em> に変身して、2つの文が1つにつながった！ who は「ここから説明が始まるよ」の合図。"},
+  {html:row(ch("S","I"),ch("V","have"),ch("N","a friend",null,{at:1}),ch("M","who can run fast",null,{af:1})),cap:"完成。「<em>速く走れる</em>友達がいる」。日本語と説明の位置が逆になるのがポイント。"},
+  {html:row(ch("S","An architect","～とは"),ch("V","is"),ch("N","someone","人",{at:1}),ch("M","who designs buildings",null,{af:1})),cap:"「建築家とは、<em>建物を設計する</em>人です」。<em>A is someone who ～</em> で「Aとは～する人」。日本語の順に buildings から始めないように！"},
+  {html:row(ch("S","I"),ch("V","want to meet"),ch("N","the woman",null,{at:1}),ch("M","who wrote this book",null,{af:1})),cap:"「この本を書いた女性に会いたい」。英語は<em>結論（会いたい）が先</em>。だれに？ → the woman、どんな女性？ → who wrote this book。"},
+  {fig:svgw(FIG.person(55,30,"var(--s)")+T(55,128,"人","var(--ink)",14)+T(55,152,"who / that","var(--s)",15)+`<g transform="translate(170,70)"><ellipse cx="0" cy="0" rx="28" ry="18" fill="var(--n)"/><circle cx="24" cy="-14" r="12" fill="var(--n)"/><rect x="-22" y="12" width="7" height="18" fill="var(--n)"/><rect x="12" y="12" width="7" height="18" fill="var(--n)"/></g>`+T(170,128,"動物","var(--ink)",14)+FIG.book(285,70)+T(285,128,"もの","var(--ink)",14)+T(228,152,"which / that","var(--m)",15),165),cap:"人なら <em>who</em>、もの・動物なら <em>which</em>。<em>that</em> はどっちにも使える。迷ったら that！"}
+ ]},
+ s4:{nm:"接触節",steps:[
+  {fig:svgw(FIG.person(110,30,"var(--s)")+FIG.book(140,70)+T(110,140,"I bought（私が買った）","var(--s)",13)+`<path d="M175 70 h50" stroke="var(--m)" stroke-width="3" marker-end="url(#ah)"/>`+FIG.book(260,70)+T(260,110,"the book","var(--n)",14),150),
+   html:row(ch("X","This is"),ch("N","the book",null,{at:1}),ch("M","that I bought",null,{af:1})),cap:"「これは<em>私が買った</em>本です」。the book を that I bought が後ろから説明している。"},
+  {html:row(ch("X","This is"),ch("N","the book",null,{at:1}),ch("M","that","消える",{cls:"gone"}),ch("M","I bought","主語＋動詞",{af:1})),cap:"that のすぐ後ろに <em>I（主語）</em> があるときは、that を消してもOK。"},
+  {html:row(ch("X","This is"),ch("N","the book",null,{at:1}),ch("M","I bought",null,{af:1})),cap:"これが<em>接触節</em>。名詞のすぐ後ろに「I / you / she / my mother」などが来たら、そこから説明スタートの合図！"},
+  {html:row(ch("N","The movie",null,{at:1}),ch("M","I saw yesterday",null,{af:1}),ch("V","was","文の動詞"),ch("X","interesting.")),cap:"説明つきの名詞が<em>主語</em>になるパターン。「私が昨日見た映画は」までが1つのかたまり。そのあとに <em>was</em>。was をかたまりの中に入れないように！"},
+  {html:row(ch("X","This is"),ch("N","the book"),ch("M","I bought"),ch("X","it","いらない！",{cls:"bad"})),cap:"よくあるまちがい。the book が「買ったもの」なので、最後に <em>it</em> を書くと同じものを2回言ってしまう。"}
+ ]},
+ s5:{nm:"want 人 to ～",steps:[
+  {fig:svgw(FIG.person(70,40,"var(--s)")+`<rect x="100" y="10" width="110" height="34" rx="12" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>`+T(155,32,"作ってほしいな","var(--ink)",12)+FIG.person(260,40,"var(--v)",1)+`<rect x="282" y="72" width="34" height="8" rx="3" fill="var(--sub)"/><rect x="306" y="66" width="22" height="5" rx="2" fill="var(--sub)"/>`+T(70,140,"I（私）","var(--s)",13)+T(260,140,"you（あなた）","var(--v)",13)+T(260,160,"to make lunch","var(--m)",13),170),cap:"「私は、<em>あなたに</em>お昼ごはんを作って<em>ほしい</em>」。作るのは私じゃなくて、あなた。"},
+  {html:row(ch("S","I"),ch("V","want"),ch("N","you","してほしい相手"),ch("M","to make lunch","してほしいこと")),cap:"want のすぐ後ろに<em>してほしい相手</em>、そのあと <em>to＋動詞</em>。"},
+  {html:`<div>${row(ch("S","I"),ch("V","want"),ch("M","to make lunch","自分が作りたい"))}</div><div>${row(ch("S","I"),ch("V","want"),ch("N","you"),ch("M","to make lunch","あなたに作ってほしい"))}</div>`,cap:"you が入るかどうかで、<em>だれが作るか</em>が変わる。"},
+  {html:row(ch("S","I"),ch("V","helped"),ch("N","you","手伝った相手"),ch("M","wash the car","to なし！")),cap:"help のときだけは <em>to をつけない</em>。「あなたが車を洗うのを手伝った」。相手は me / him / her の形にする。"}
+ ]},
+ cul:{nm:"日本文化紹介",steps:[{cap:"むずかしい日本語は、まず<em>かんたんな日本語に言いかえる</em>。<br>「100年の歴史を持つ」→「100年前に建てられた」<br>「心に残る」→「決して忘れない」<br>「おすすめ」→「～してね」"}]},
+ voc:{nm:"単語",steps:[{cap:"単語は<em>部品</em>に分けると覚えやすい。<br>sad＋ness＝悲しみ<br>listen＋er＝聞き手<br>evolve → evolution＝進化<br>調べた単語はホームの「調べた単語」で何度でも見直せるよ。"}]},
+ lis:{nm:"リスニング",steps:[{cap:"英語は<em>聞こえた順番のまま</em>意味をとる。<br>The boy（少年）→ standing with a ball（ボールを持って立っている）→ is Yuta（ユウタだ）<br>聞き取れないときは「ゆっくり」ボタンを使おう。"}]},
+ read:{nm:"長文読解",steps:[{cap:"長文は3ステップ。<br>①<em>問題を先に</em>読む<br>②<em>最後の段落</em>で、書いた人がいちばん言いたいことをつかむ<br>③ who / which / that が出てきたら「前の名詞の説明だな」とかたまりで読む"}]}
+})}
+const ARROWDEF=`<svg width="0" height="0" style="position:absolute"><defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--m)"/></marker></defs></svg>`;
+function drawArrows(stage){
+  const old=stage.querySelector(".xarrow");if(old)old.remove();
+  const f=stage.querySelector("[data-af]")||stage.querySelector(".chip.M"),t=stage.querySelector("[data-at]")||stage.querySelector(".chip.N");
+  if(!f||!t)return;
+  const R=stage.getBoundingClientRect(),a=f.getBoundingClientRect(),b=t.getBoundingClientRect();
+  const x1=a.left+a.width/2-R.left,y1=a.bottom-R.top+2,x2=b.left+b.width/2-R.left,y2=b.bottom-R.top+2;
+  const dip=Math.max(y1,y2)+26;
+  stage.insertAdjacentHTML("beforeend",`<svg class="xarrow" aria-hidden="true"><path d="M${x1} ${y1} C ${x1} ${dip}, ${x2} ${dip}, ${x2} ${y2+4}" stroke="var(--m)" stroke-width="3" fill="none" marker-end="url(#ah)"/></svg>`);
+}
+function explain(st,idx,after){
+  idx=idx||0;const E=EXP()[st];if(!E){home();return}const s=E.steps[idx];
+  speakStop();
+  app.innerHTML=`${ARROWDEF}
+  <div class="top"><button class="iconbtn" id="bk" aria-label="もどる">${ICON.back}</button><span class="tag">図でふりかえり ${idx+1}/${E.steps.length}</span><span style="width:40px"></span></div>
+  <div class="card">
+    <div class="sub" style="font-weight:800;color:${(stage(st)||{}).col||"var(--accent)"}">${E.nm}</div>
+    ${s.fig?`<div class="fig">${s.fig}</div>`:""}
+    ${s.html?`<div class="xstage" id="xs">${s.html}</div>`:""}
+    <div class="cap">${s.cap}</div>
+    ${s.html?LEGEND:""}
+    <div class="dots">${E.steps.map((_,i)=>`<i class="${i===idx?"on":""}"></i>`).join("")}</div>
+  </div>
+  <div class="row" style="flex-wrap:nowrap">
+    ${idx>0?`<button class="btn" id="pv" style="flex:1">もどる</button>`:""}
+    ${idx<E.steps.length-1?`<button class="btn primary" id="nx" style="flex:2">つぎへ</button>`:`<button class="btn primary" id="pr" style="flex:2">この分野を練習する</button>`}
+  </div>
+  ${idx===E.steps.length-1?`<button class="btn" id="hm">${after&&after.length?"ほかの分野も見る":"ホームへ"}</button>`:""}`;
+  const xs=$("#xs");if(xs){requestAnimationFrame(()=>drawArrows(xs));setTimeout(()=>drawArrows(xs),400)}
+  $("#bk").onclick=home;
+  if($("#pv"))$("#pv").onclick=()=>explain(st,idx-1,after);
+  if($("#nx"))$("#nx").onclick=()=>explain(st,idx+1,after);
+  if($("#pr"))$("#pr").onclick=()=>startQuiz(buildStage(st),stage(st).nm);
+  if($("#hm"))$("#hm").onclick=()=>{if(after&&after.length)explain(after[0],0,after.slice(1));else home()};
+  scrollTo(0,0);
+}
+addEventListener("resize",()=>{const xs=document.getElementById("xs");if(xs)drawArrows(xs)});
 
 /* ===== 保存 ===== */
 const KEY="eigo-block-lab-v1";
@@ -610,7 +788,7 @@ function home(){
     <button class="iconbtn" id="snd" aria-label="効果音の切りかえ">${S.snd?ICON.sound:ICON.mute}</button>
   </div>
   <div class="panel lv">
-    <div class="emblem">${l+1}</div>
+    <div class="emblem">${sprite(l)}<span class="lvn">${l+1}</span></div>
     <div style="min-width:0">
       <div class="sub">Lv.${l+1}</div>
       <div class="ttl">${TITLES[l]}</div>
@@ -641,6 +819,11 @@ function home(){
       <span class="pc">${m.m}/${m.t}</span>
     </button>`}).join("")}</div>
   ${(()=>{const u=Object.entries(S.unk||{}).sort((a,b)=>b[1]-a[1]).slice(0,12);return u.length?`<div class="panel"><h3 style="font-size:1rem;margin-bottom:4px">調べた単語</h3><div class="sub" style="margin-bottom:8px">タップで発音。何回も調べた単語ほど上に出ます。</div>${wordListHTML(u.map(x=>x[0]))}</div>`:""})()}
+  <div class="panel">
+    <h3 style="font-size:1rem;margin-bottom:4px">称号コレクション</h3>
+    <div class="sub" style="margin-bottom:10px">レベルが上がると新しい称号とアイコンが手に入る</div>
+    <div class="titles">${TITLES.map((t,i)=>`<div class="tcell ${i<=l?"on":"lock"}${i===l?" now":""}"><div class="ic">${sprite(i)}</div>${i<=l?t:"？？？"}<br><span class="sub">Lv.${i+1}</span></div>`).join("")}</div>
+  </div>
   <div class="panel">
     <h3 style="font-size:1rem;margin-bottom:8px">バッジ</h3>
     <div class="badges">${BADGES.map(b=>`<span class="badge${S.badges[b.k]?" on":""}">${ICON.star}${b.nm}</span>`).join("")}</div>
@@ -676,7 +859,9 @@ function lesson(st,idx){
   <div class="row" style="flex-wrap:nowrap">
     ${idx>0?`<button class="btn" id="prev" style="flex:1">もどる</button>`:""}
     <button class="btn primary" id="nx" style="flex:2">${idx<sl.length-1?"つぎへ":st==="s0"?"ステージ1をやってみる":"練習10問へ"}</button>
-  </div>`;
+  </div>
+  ${idx===sl.length-1&&EXP()[st]&&EXP()[st].steps.length>1?`<button class="btn" id="xv">図と矢印でもっとくわしく見る</button>`:""}`;
+  if($("#xv"))$("#xv").onclick=()=>explain(st);
   $("#bk").onclick=home;
   if($("#prev"))$("#prev").onclick=()=>lesson(st,idx-1);
   if($("#sp"))$("#sp").onclick=()=>speak(s.seg.replace(/\{\w\|([^}]+)\}/g,"$1"));
@@ -771,7 +956,7 @@ function answerO(){
   const ok=c.slot.every((x,i)=>c.q.b[i]===x.t);
   app.querySelectorAll("#slot .blk").forEach((b,i)=>b.classList.add(c.q.b[i]===c.slot[i].t?"ok":"ng"));
   $("#go").hidden=true;
-  judge(ok,c.q.b.join(" ")+(c.q.b.join(" ").match(/[?.!]$/)?"":(/^(Do|Is|What|Can|Who)\b/.test(c.q.b[0])?"?":".")));
+  judge(ok,c.q.b.join(" ")+(c.q.b.join(" ").match(/[?.!]$/)?"":(/^(Do|Did|Is|Are|What|Where|Can|Who)\b/.test(c.q.b[0])?"?":".")));
 }
 function answerY(){
   const c=sess.cur;if(c.answered)return;
@@ -795,7 +980,7 @@ function judge(ok,correct){
   else{sess.combo=0;if(!sess.requeued[q.id]){sess.requeued[q.id]=1;sess.list.push(q)}}
   sess.xp+=gain;S.xp+=gain;
   beep(ok?"ok":"ng");
-  if(ok&&[3,5,10,15,20].includes(sess.combo)){burst(sess.combo+" COMBO!",sess.combo>=10?"止まらない！":sess.combo>=5?"いい流れ！":"その調子！");beep("combo")}
+  if(ok&&[3,5,10,15,20].includes(sess.combo)){burst(sess.combo+" COMBO!",sess.combo>=10?"止まらない！":sess.combo>=5?"いい流れ！":"その調子！");beep("combo");if(sess.combo>=10)confetti()}
   $("#cb").textContent=sess.combo>=2?sess.combo+" COMBO":"";
   save();
   const st=stage(q.st);const [w,j,m]=(q.ex||"").split("|");
@@ -835,19 +1020,28 @@ function finish(){
   S.log.push(entry);S.log=S.log.slice(-60);
   save();
   const l=lvOf(S.xp),up=l>sess.startLv;
+  const wcount={};sess.wrong.forEach(id=>{const k=Q.find(q=>q.id===id).st;wcount[k]=(wcount[k]||0)+1});
+  const wst=ORDER.filter(k=>wcount[k]&&EXP()[k]).sort((a,b)=>wcount[b]-wcount[a]);
   app.innerHTML=`
   <div class="card" style="text-align:center;align-items:center">
     <div class="sub">${esc(sess.label)}</div>
     <div class="big">${sess.c}<span style="font-size:.45em">/${sess.t}</span></div>
     <div class="sub">正答率 ${pct}%　最大 ${sess.maxCombo} コンボ　+${sess.xp} XP</div>
-    ${up?`<div class="panel" style="width:100%;border:2px solid var(--n)"><div class="dot" style="font-size:1.2rem">LEVEL UP!</div><div>Lv.${l+1}「${TITLES[l]}」になった！</div></div>`:""}
+    ${up?`<div class="panel" style="width:100%;border:2px solid var(--n)"><div style="width:84px;margin:0 auto">${sprite(l)}</div><div class="dot" style="font-size:1.2rem">LEVEL UP!</div><div>Lv.${l+1}「${TITLES[l]}」になった！</div></div>`:""}
     ${newB.length?`<div style="width:100%"><div class="sub">新しいバッジ</div><div class="badges" style="justify-content:center">${newB.map(n=>`<span class="badge on">${ICON.star}${n}</span>`).join("")}</div></div>`:""}
     ${sess.wrong.length?`<div class="sub">まちがえた ${sess.wrong.length} 問は、明日の復習に自動で入ります。</div>`:`<div class="sub">全問正解！ 明日はさらにレベルの高い問題が出ます。</div>`}
   </div>
+  ${wst.length?`<div class="panel" style="display:flex;flex-direction:column;gap:10px;border:2px solid var(--n)">
+    <h3 style="font-size:1rem">図でふりかえろう</h3>
+    <div class="sub">今日まちがえたところを、絵と矢印で説明するよ。</div>
+    ${wst.map(k=>`<button class="xcard" data-x="${k}"><span class="ic" style="background:${stage(k).col}">図</span><span><b>${EXP()[k].nm}</b><br><span class="sub">まちがえた問題 ${wcount[k]}問</span></span><span class="pc">→</span></button>`).join("")}
+  </div>`:""}
   <button class="btn primary" id="again">もう1回（10問）</button>
   <button class="btn" id="hm">ホームへ</button>
   <div class="sync" id="syncmsg">${GAS_URL?"記録を送っています…":""}</div>`;
-  if(up){beep("lv");burst("LEVEL UP!",TITLES[l])}
+  if(up){beep("lv");burst(`<span class="spr">${sprite(l)}</span>LEVEL UP!`,TITLES[l]);confetti()}
+  else if(sess.t>=10&&sess.c===sess.t)confetti();
+  app.querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>{const i=wst.indexOf(b.dataset.x);explain(b.dataset.x,0,wst.slice(i+1))});
   $("#again").onclick=()=>startQuiz(buildDaily().slice(0,10),"もう1回");
   $("#hm").onclick=home;
   pushRemote(entry);
