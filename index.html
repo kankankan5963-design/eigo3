@@ -1,0 +1,918 @@
+<title>英語ブロックラボ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=M+PLUS+Rounded+1c:wght@500;700;800&family=Lexend:wght@400;600;700&display=swap">
+<style>
+/* Layout: one phone column. Home = level card + today button + stage list. Quiz = progress bar, card, colored sentence blocks. */
+:root{
+  --bg:#eef1fb; --panel:#ffffff; --ink:#18203a; --sub:#5b6483; --line:#d6dbef; --soft:#e4e8f7;
+  --accent:#6b4dff; --accent-soft:#e7e1ff;
+  --s:#2f6fe8; --s-soft:#dce8ff;   /* subject: だれが */
+  --v:#e2483f; --v-soft:#fde1df;   /* verb: どうする */
+  --n:#c98a00; --n-soft:#fff1cc;   /* noun being described */
+  --m:#0f9a72; --m-soft:#d6f5ea;   /* modifier: 説明 */
+  --ok:#14955f; --ok-soft:#d9f4e7; --ng:#d33b3b; --ng-soft:#fde0e0;
+  --font-ui:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;
+  --font-en:"Lexend","Segoe UI","Helvetica Neue",Arial,sans-serif;
+  --font-dot:"DotGothic16","M PLUS Rounded 1c",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1124; --panel:#181c36; --ink:#eceffd; --sub:#9ba3c6; --line:#2c3260; --soft:#222850;
+  --accent:#9d86ff; --accent-soft:#2e2766;
+  --s:#6d9dff; --s-soft:#1d2e5c; --v:#ff7a72; --v-soft:#4a2224; --n:#f2be3d; --n-soft:#43361a; --m:#3fd3a2; --m-soft:#153e33;
+  --ok:#43d18f; --ok-soft:#173d2c; --ng:#ff6d6d; --ng-soft:#4a1f22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1124; --panel:#181c36; --ink:#eceffd; --sub:#9ba3c6; --line:#2c3260; --soft:#222850;
+  --accent:#9d86ff; --accent-soft:#2e2766;
+  --s:#6d9dff; --s-soft:#1d2e5c; --v:#ff7a72; --v-soft:#4a2224; --n:#f2be3d; --n-soft:#43361a; --m:#3fd3a2; --m-soft:#153e33;
+  --ok:#43d18f; --ok-soft:#173d2c; --ng:#ff6d6d; --ng-soft:#4a1f22; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:16px;line-height:1.6;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:540px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 48px;display:flex;flex-direction:column;gap:14px}
+button{font-family:inherit;color:inherit;cursor:pointer;border:0;background:none;font-size:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.en{font-family:var(--font-en)}
+.dot{font-family:var(--font-dot);letter-spacing:.04em}
+h1,h2,h3{margin:0;text-wrap:balance}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sub{color:var(--sub);font-size:.88rem}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;border-radius:14px;padding:14px 16px;font-weight:800;font-size:1.05rem;background:var(--soft);border:1px solid var(--line);width:100%}
+.btn.primary{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 4px 0 color-mix(in srgb,var(--accent) 55%,#000)}
+.btn.primary:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--accent) 55%,#000)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.small{padding:9px 12px;font-size:.9rem;width:auto;border-radius:11px}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:800;padding:2px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.bar{height:10px;border-radius:99px;background:var(--soft);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .5s}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--font-dot);font-size:1.25rem}
+.logo .blk{display:inline-flex;gap:2px}
+.logo .blk i{width:10px;height:18px;border-radius:3px;display:block}
+.iconbtn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line)}
+.iconbtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* level card */
+.lv{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
+.emblem{width:64px;height:64px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 50%,var(--s)));color:#fff;font-family:var(--font-dot);font-size:1.6rem;box-shadow:inset 0 -5px 0 rgba(0,0,0,.18)}
+.lv .ttl{font-family:var(--font-dot);font-size:1.15rem}
+.count{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.count div{background:var(--soft);border-radius:12px;padding:8px;text-align:center}
+.count b{display:block;font-family:var(--font-dot);font-size:1.4rem;font-weight:400;font-variant-numeric:tabular-nums}
+.count span{font-size:.72rem;color:var(--sub)}
+.theme{border-left:4px solid var(--n);padding:4px 10px;background:var(--n-soft);border-radius:0 10px 10px 0;font-size:.9rem}
+
+/* stages */
+.stages{display:flex;flex-direction:column;gap:8px}
+.stage{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-align:left;width:100%}
+.stage .no{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-family:var(--font-dot);font-size:1.1rem;color:#fff}
+.stage .nm{font-weight:800;font-size:.98rem}
+.stage .bar{height:7px;margin-top:4px}
+.stage .pc{font-family:var(--font-dot);color:var(--sub);font-size:.9rem;font-variant-numeric:tabular-nums}
+.stage.focus{border:2px solid var(--n)}
+
+/* chips (sentence blocks) */
+.seg{display:flex;flex-wrap:wrap;gap:6px 6px;align-items:flex-start;font-family:var(--font-en);font-size:1.02rem}
+.chip{display:inline-flex;flex-direction:column;align-items:center;border-radius:9px;padding:3px 9px 2px;line-height:1.35;border:2px solid transparent}
+.chip small{font-family:var(--font-ui);font-size:.62rem;font-weight:800;line-height:1.2;white-space:nowrap}
+.chip.S{background:var(--s-soft);border-color:var(--s)}.chip.S small{color:var(--s)}
+.chip.V{background:var(--v-soft);border-color:var(--v)}.chip.V small{color:var(--v)}
+.chip.N{background:var(--n-soft);border-color:var(--n);border-style:solid;border-width:2.5px}.chip.N small{color:var(--n)}
+.chip.M{background:var(--m-soft);border-color:var(--m);border-style:dashed}.chip.M small{color:var(--m)}
+.chip.X{background:transparent;border-color:transparent;padding-inline:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:.75rem;color:var(--sub)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+
+/* quiz */
+.qtop{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.combo{font-family:var(--font-dot);font-size:.95rem;color:var(--n);min-width:70px;text-align:right}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px 16px;display:flex;flex-direction:column;gap:14px}
+.prompt{font-size:1.12rem;font-weight:800}
+.ensent{font-family:var(--font-en);font-size:1.15rem;line-height:1.7}
+.blank{display:inline-block;min-width:70px;border-bottom:3px solid var(--accent);margin:0 4px}
+.choices{display:grid;gap:10px}
+.choice{text-align:left;padding:13px 14px;border-radius:13px;background:var(--soft);border:2px solid var(--line);font-weight:700;font-size:1rem}
+.choice.en{font-family:var(--font-en);font-weight:600}
+.choice.ok{background:var(--ok-soft);border-color:var(--ok)}
+.choice.ng{background:var(--ng-soft);border-color:var(--ng)}
+.slot{min-height:58px;border:2px dashed var(--line);border-radius:14px;padding:8px;display:flex;flex-wrap:wrap;gap:7px;align-content:flex-start}
+.pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.blk{font-family:var(--font-en);font-weight:600;font-size:1rem;padding:9px 13px;border-radius:11px;background:var(--panel);border:2px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.slot .blk{background:var(--accent-soft);border-color:var(--accent);box-shadow:none}
+.blk.ok{background:var(--ok-soft);border-color:var(--ok)}
+.blk.ng{background:var(--ng-soft);border-color:var(--ng)}
+.tin{width:100%;font-family:var(--font-en);font-size:1.15rem;padding:12px 14px;border-radius:12px;border:2px solid var(--line);background:var(--soft);color:var(--ink)}
+.passage{background:var(--soft);border-radius:12px;padding:12px 14px;font-family:var(--font-en);font-size:.98rem;line-height:1.75;max-height:280px;overflow:auto}
+.passage .notes{font-family:var(--font-ui);font-size:.78rem;color:var(--sub);margin-top:8px}
+.play{display:flex;gap:10px;justify-content:center}
+.play .bigplay{width:84px;height:84px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;box-shadow:0 5px 0 color-mix(in srgb,var(--accent) 55%,#000)}
+.play .bigplay svg{width:38px;height:38px;fill:currentColor}
+.spk{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;font-weight:800;color:var(--accent);padding:6px 10px;border-radius:10px;background:var(--accent-soft)}
+.spk svg{width:16px;height:16px;fill:currentColor}
+
+/* feedback */
+.fb{border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;border:2px solid}
+.fb.ok{background:var(--ok-soft);border-color:var(--ok)}
+.fb.ng{background:var(--ng-soft);border-color:var(--ng)}
+.stamp{font-family:var(--font-dot);font-size:1.5rem;display:flex;align-items:center;gap:10px}
+.fb.ok .stamp{color:var(--ok)}.fb.ng .stamp{color:var(--ng)}
+.ans{font-family:var(--font-en);font-weight:700;font-size:1.05rem}
+.exp{display:flex;flex-direction:column;gap:8px}
+.exp div{background:var(--panel);border-radius:11px;padding:9px 11px;font-size:.93rem}
+.exp b{display:block;font-size:.75rem;color:var(--accent);letter-spacing:.06em}
+
+/* bursts */
+.burst{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:50}
+.burst div{font-family:var(--font-dot);font-size:clamp(2.4rem,12vw,4.2rem);color:var(--n);text-shadow:0 4px 0 rgba(0,0,0,.25);animation:pop 1s ease-out forwards;text-align:center;line-height:1.1}
+.burst div small{display:block;font-size:.4em;color:var(--ink)}
+@keyframes pop{0%{transform:scale(.3);opacity:0}25%{transform:scale(1.15);opacity:1}70%{transform:scale(1);opacity:1}100%{transform:scale(1.05) translateY(-30px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.burst div{animation:none;opacity:1}.bar>i{transition:none}}
+
+/* lesson */
+.slide{display:flex;flex-direction:column;gap:12px}
+.slide p{margin:0}
+.ex-box{background:var(--soft);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.jrow{display:flex;flex-wrap:wrap;gap:6px}
+.jchip{padding:4px 10px;border-radius:9px;font-weight:800;border:2px solid}
+.swap{transition:transform .6s,opacity .6s}
+.tbl{width:100%;border-collapse:collapse;font-size:.92rem}
+.tbl th,.tbl td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+.tbl th{background:var(--soft)}
+.dots{display:flex;gap:6px;justify-content:center}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--accent)}
+
+/* result + parent */
+.big{font-family:var(--font-dot);font-size:3rem;line-height:1;font-variant-numeric:tabular-nums}
+.badges{display:flex;flex-wrap:wrap;gap:8px}
+.badge{display:flex;align-items:center;gap:6px;font-size:.8rem;font-weight:800;padding:6px 10px;border-radius:10px;background:var(--soft);color:var(--sub);border:1px solid var(--line)}
+.badge.on{background:var(--n-soft);color:var(--ink);border-color:var(--n)}
+.badge svg{width:16px;height:16px}
+.chart{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;align-items:end;height:120px;border-bottom:1px solid var(--line)}
+.chart div{background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;position:relative}
+.chart div.none{background:var(--soft)}
+.clabels{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;font-size:.62rem;color:var(--sub);text-align:center;font-variant-numeric:tabular-nums}
+.weak{display:flex;flex-direction:column;gap:6px}
+.weak div{background:var(--soft);border-radius:10px;padding:8px 10px;font-size:.88rem}
+.weak .en{font-weight:600}
+.note{font-size:.8rem;color:var(--sub)}
+.sync{font-size:.75rem;color:var(--sub);text-align:center}
+/* word help */
+.w{cursor:pointer;border-bottom:1.5px dotted color-mix(in srgb,var(--sub) 70%,transparent);border-radius:3px}
+.w:hover{background:var(--accent-soft)}
+.w.hit{background:var(--n-soft)}
+.whelp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wbtn{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;font-weight:800;padding:6px 11px;border-radius:10px;background:var(--n-soft);color:var(--ink);border:1px solid var(--n)}
+.wlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.witem{text-align:left;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:6px 9px;font-size:.85rem;line-height:1.35;min-width:0}
+.witem b{font-family:var(--font-en);display:block;font-size:.95rem}
+.witem.hit{border-color:var(--n);background:var(--n-soft)}
+details.wd summary{cursor:pointer;font-weight:800;font-size:.88rem;color:var(--accent)}
+details.wd[open] summary{margin-bottom:8px}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--panel);border-top:2px solid var(--n);box-shadow:0 -8px 24px rgba(0,0,0,.18);border-radius:18px 18px 0 0;padding-top:14px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+.sheet .inner{max-width:540px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.sheet .wd-en{font-family:var(--font-en);font-size:1.5rem;font-weight:700}
+.sheet .wd-jp{font-size:1.05rem;font-weight:700}
+</style>
+
+<div class="wrap" id="app"></div>
+<div id="fx"></div>
+<div id="sheet"></div>
+
+<script>
+/* ===== 設定：自動記録用のApps ScriptのURL（空のときはこの端末の中だけに保存） ===== */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwdGGBEkZ_k0ucRhh9Jx6OPqw8Vuk5UgbyW9GLyrlt5iRsibl8yDbUPr4_m9L3C6HIBFQ/exec";
+const TEST_DATE = "2026-11-13";
+
+/* ===== 問題データ（教科書・ワークの範囲に合わせたオリジナル問題） ===== */
+const STAGES = [
+  {k:"s1",nm:"文の骨組み",short:"骨組み",col:"var(--s)",jp:"日本語は「私は／サッカーが／好き」と動詞が最後。英語は「I／like／soccer」と、2番目にすぐ動詞が来る。"},
+  {k:"s2",nm:"名詞を後ろから説明",short:"後ろ説明",col:"var(--m)",jp:"日本語は説明が名詞の前（テーブルの上の→ペン）。英語は名詞が先、説明が後ろ（the pen ← on the table）。"},
+  {k:"s3",nm:"関係代名詞 who / which / that",short:"関係代名詞",col:"var(--accent)",jp:"日本語には関係代名詞がない。英語の who / which / that は「ここから前の名詞の説明が始まるよ」という合図。"},
+  {k:"s4",nm:"接触節（that を省いた形）",short:"接触節",col:"var(--n)",jp:"日本語の「私が買った本」と発想は同じ。ただし順番が逆で、the book が先、I bought が後ろ。"},
+  {k:"s5",nm:"want 人 to ～ / help 人 ～",short:"want人to",col:"var(--v)",jp:"日本語は「あなたに～してほしい」と「に」で表す。英語は want のすぐ後ろに相手を置き、to＋動詞を続ける。"},
+  {k:"cul",nm:"日本文化を英語で紹介",short:"日本文化",col:"#d0559c",jp:"日本語をそのまま訳さず、英語にしやすい簡単な日本語に言いかえてから訳すのがコツ。"},
+  {k:"voc",nm:"テスト範囲の単語・熟語",short:"単語",col:"#7a8a2a",jp:"スペルは音のかたまりで覚えると楽。sad＋ness、evolu＋tion のように分けてみよう。"},
+  {k:"lis",nm:"リスニング",short:"リスニング",col:"#1f8fb3",jp:"聞こえた順番のまま、かたまりごとに意味をとろう。日本語の順に並べ替えようとしない。"},
+  {k:"read",nm:"長文読解",short:"長文",col:"#8a5a2b",jp:"長文は最後の段落に書き手の言いたいことがあることが多い。問題を先に読んでから本文を読もう。"}
+];
+const Q = [];
+const c=(q,o,ex,more)=>Object.assign({t:"c",q,o,ex},more||{});
+const o=(jp,b,ex,seg)=>({t:"o",jp,b:b.split("/"),ex,seg});
+const y=(jp,s,a,ex,seg)=>({t:"y",jp,s,a:a.split(","),ex,seg});
+function add(st,arr){arr.forEach((x,i)=>{x.st=st;x.id=st+"-"+(i+1);Q.push(x)})}
+
+add("s1",[
+ c("英語の文で、ふつう2番目に来るのは？",["動詞（どうする）","名詞（なにを）","場所（どこで）","時（いつ）"],"英語は「だれが→どうする→なにを→どこで→いつ」の順。2番目は必ず動詞と覚えよう。||動詞を最後に置いてしまう（日本語の順番のくせ）。"),
+ c("「私はネコが好きです」を正しく英語にすると？",["I like cats.","I cats like.","Like I cats.","Cats I like."],"だれが(I)→どうする(like)→なにを(cats)。||日本語の順に I cats like としてしまう。",{seg:"{S|I} {V|like} cats."}),
+ c("次の文の「だれが（主語）」はどれ？",["Our teacher","speaks","three languages","languages"],"文の最初にある、動作をする人・ものが主語。speaks の前にある Our teacher が主語。",{en:"Our teacher speaks three languages.",seg:"{S|Our teacher} {V|speaks} three languages."}),
+ c("次の文の「どうする（動詞）」はどれ？",["plays","Mika","the piano","after school"],"主語 Mika のすぐ後ろが動詞 plays。",{en:"Mika plays the piano after school.",seg:"{S|Mika} {V|plays} the piano after school."}),
+ o("私はサッカーが好きです。","I/like/soccer","だれが(I)→どうする(like)→なにを(soccer)の順。","{S|I} {V|like} soccer."),
+ o("ケンは毎朝走ります。","Ken/runs/every morning","「いつ」を表す every morning は文の最後。","{S|Ken} {V|runs} every morning."),
+ o("私の姉は英語を勉強しています。","My sister/is studying/English","is studying で「勉強している」。2つの単語で1つの動詞のかたまり。","{S|My sister} {V|is studying} English."),
+ o("彼らは昨日その映画を見ました。","They/watched/the movie/yesterday","「なにを(the movie)」の後に「いつ(yesterday)」。","{S|They} {V|watched} the movie yesterday."),
+ o("私の父は駅で働いています。","My father/works/at the station","「どこで」は at the station。動詞 works の後ろに置く。","{S|My father} {V|works} at the station."),
+ y("私たちは公園でテニスをします。","We ___ tennis in the park.","play","スポーツを「する」は play。主語 We のすぐ後ろが動詞。","{S|We} {V|play} tennis in the park.")
+]);
+
+add("s2",[
+ c("「テーブルの上のペン」を英語にすると？",["the pen on the table","the on the table pen","on the table the pen","the table on the pen"],"まず名詞 the pen、そのあと説明 on the table。||日本語の順に「テーブルの上の」を先に言ってしまう。",{seg:"{N|the pen} {M|on the table}"}),
+ c("「ギターを弾いている少年」を英語にすると？",["the boy playing the guitar","the playing guitar boy","the boy plays the guitar","playing the boy the guitar"],"「～している」は動詞の ing 形で後ろから説明。||the boy plays the guitar は「少年はギターを弾く」という文になってしまう。",{seg:"{N|the boy} {M|playing the guitar}"}),
+ c("「英語で書かれた手紙」を英語にすると？",["a letter written in English","a written letter in English","a letter writing in English","a letter wrote in English"],"「～された」は過去分詞（written）で後ろから説明。||writing だと「手紙が書いている」になってしまう。",{seg:"{N|a letter} {M|written in English}"}),
+ c("「何か食べるもの」を英語にすると？",["something to eat","to eat something","something eat","eating something"],"to＋動詞で「～するための」。something のすぐ後ろに to eat。",{seg:"{N|something} {M|to eat}"}),
+ c("次の文の意味は？",["ドアのそばに立っている男性は私のおじです。","男性はドアのそばに立って私のおじです。","私のおじはドアのそばで男性と立っています。","ドアは男性のそばに立っています。"],"The man ← standing by the door がひとかたまりで主語。動詞は is。",{en:"The man standing by the door is my uncle.",seg:"{N|The man} {M|standing by the door} {V|is} my uncle."}),
+ c("次の文の意味は？",["私にはやらなければならない宿題がたくさんある。","私は宿題をたくさんやった。","私は宿題をするのがとても好きだ。","宿題がたくさんある人がやる。"],"homework ← to do。「やるための（やるべき）宿題」。",{en:"I have a lot of homework to do.",seg:"{S|I} {V|have} {N|a lot of homework} {M|to do}."}),
+ c("次の文で、後ろから説明されている名詞は？",["The boy","a ball","Yuta","with"],"with a ball が The boy を説明している。「ボールを持った少年」。",{en:"The boy with a ball is Yuta.",seg:"{N|The boy} {M|with a ball} {V|is} Yuta."}),
+ c("「～している（名詞）」と後ろから説明するときの形は？",["動詞の ing 形","動詞の過去分詞","to＋動詞の原形","動詞の原形だけ"],"running dog → the dog running。「している」は ing。"),
+ c("「～された（名詞）」と後ろから説明するときの形は？",["動詞の過去分詞","動詞の ing 形","to＋動詞の原形","動詞の原形だけ"],"「撮られた写真」は a picture taken。take の過去分詞 taken。"),
+ o("窓のそばにいる女の子は私の妹です。","The girl/by the window/is/my sister","The girl ← by the window がひとかたまりで主語。そのあと is。","{N|The girl} {M|by the window} {V|is} my sister."),
+ o("ベンチで眠っているネコはかわいい。","The cat/sleeping/on the bench/is/cute","「眠っている」は sleeping。The cat の後ろに置く。","{N|The cat} {M|sleeping on the bench} {V|is} cute."),
+ o("これは日本で作られた車です。","This is/a car/made/in Japan","「作られた」は過去分詞 made。a car の後ろに置く。","This is {N|a car} {M|made in Japan}."),
+ o("私は読む本がほしいです。","I want/a book/to read","「読むための本」は a book to read。","{S|I} {V|want} {N|a book} {M|to read}."),
+ o("これらは京都で撮られた写真です。","These are/the pictures/taken/in Kyoto","「撮られた」は taken。the pictures の後ろに置く。","These are {N|the pictures} {M|taken in Kyoto}."),
+ o("私には一緒に遊ぶ友達がたくさんいます。","I have/many friends/to play with","「一緒に遊ぶための友達」。play with（～と遊ぶ）の with を最後に残すのがポイント。","{S|I} {V|have} {N|many friends} {M|to play with}."),
+ y("公園で走っている犬を見て。","Look at the dog ___ in the park.","running","「走っている」は ing 形。run は n を重ねて running。","Look at {N|the dog} {M|running in the park}."),
+ y("中国で話されている言語","the language ___ in China","spoken","「話されている」は過去分詞 spoken（speak - spoke - spoken）。","{N|the language} {M|spoken in China}")
+]);
+
+add("s3",[
+ c("(　)に入るのは？",["who","which"],"先行詞（説明される名詞）が a friend＝人なので who。",{en:"I have a friend (　) lives in Osaka.",seg:"{S|I} {V|have} {N|a friend} {M|who lives in Osaka}."}),
+ c("(　)に入るのは？",["which","who"],"先行詞 the bus はもの。ものには which（または that）。",{en:"This is the bus (　) goes to the station.",seg:"This is {N|the bus} {M|which goes to the station}."}),
+ c("(　)に入るのは？",["that","which"],"先行詞 a singer は人。which はもの専用なので使えない。that は人にもものにも使える。",{en:"She is a singer (　) everyone knows.",seg:"She is {N|a singer} {M|that everyone knows}."}),
+ c("(　)に入るのは？",["that","who"],"先行詞 the bird は動物（もの扱い）。who は人専用なので that。",{en:"Look at the bird (　) is flying.",seg:"Look at {N|the bird} {M|that is flying}."}),
+ c("(　)に入るのは？",["which","who"],"先行詞 The cake はもの。",{en:"The cake (　) my mother made was good.",seg:"{N|The cake} {M|which my mother made} {V|was} good."}),
+ c("(　)に入るのは？",["who","which"],"先行詞 a girl は人。",{en:"I know a girl (　) can speak French.",seg:"{S|I} {V|know} {N|a girl} {M|who can speak French}."}),
+ c("(　)に入るのは？",["that","who"],"先行詞 the phone はもの。who は使えない。",{en:"Is this the phone (　) you lost?",seg:"Is this {N|the phone} {M|that you lost}?"}),
+ c("(　)に入るのは？",["that","who"],"先行詞 the dog は動物。動物は「もの」と同じ扱い。",{en:"This is the dog (　) has long ears.",seg:"This is {N|the dog} {M|that has long ears}."}),
+ c("「先行詞」とは何のこと？",["関係代名詞の前にあって、説明される名詞","文の最初の単語","関係代名詞のすぐ後ろの動詞","文の最後の名詞"],"a friend who ～ の a friend が先行詞。「先に行っている言葉」と覚えよう。"),
+ c("先行詞が「人」のときに使える関係代名詞は？",["who と that","which と that","which だけ","who と which"],"人→ who / that、もの・動物→ which / that。that はどちらにも使える便利なことば。"),
+ c("次の文の意味は？",["佐藤先生と話している少年はケンです。","少年は佐藤先生にケンのことを話しています。","ケンは佐藤先生と話す少年を知っています。","佐藤先生は少年とケンに話しています。"],"The boy ← who is talking to Ms. Sato までが主語のかたまり。文の動詞は2つめの is。",{en:"The boy who is talking to Ms. Sato is Ken.",seg:"{N|The boy} {M|who is talking to Ms. Sato} {V|is} Ken."}),
+ c("次の文の意味は？",["これは私の人生を変えた本です。","これは私が人生で変えた本です。","この本は人生を変えるでしょう。","これは変わった人生の本です。"],"the book ← which changed my life。「私の人生を変えた本」。",{en:"This is the book which changed my life.",seg:"This is {N|the book} {M|which changed my life}."}),
+ c("2つの文を1つにすると？　I have a cat. It is white.",["I have a cat which is white.","I have a cat who is white.","I have a cat it is white.","I have a cat which it is white."],"It（＝a cat）を which に変身させてつなぐ。which に変えたら it は消える。||which と it を両方書いてしまう。"),
+ c("2つの文を1つにすると？　This is the bag. I use it every day.",["This is the bag that I use every day.","This is the bag that I use it every day.","This is the bag I use it every day.","This is the bag who I use every day."],"it が that に変身して前に移動する。後ろに it は残らない。||最後に it を残してしまう（いちばん多いまちがい）。"),
+ c("2つの文を1つにすると？　The man is a pilot. He lives next door.",["The man who lives next door is a pilot.","The man who he lives next door is a pilot.","The man lives next door who is a pilot.","The man is who lives next door a pilot."],"He が who に変身。The man のすぐ後ろに who lives next door をはさむ。"),
+ c("次の that は省略できる？",["できる（後ろに主語 we がある）","できない（ものだから）","できない（歌だから）","いつでもできる"],"that の後ろに「主語＋動詞（we sang）」が続くときは省略できる。",{en:"The song that we sang was beautiful.",seg:"{N|The song} {M|that we sang} {V|was} beautiful."}),
+ c("次の that は省略できる？",["できない（すぐ後ろが動詞）","できる（人だから）","できる（いつでも）","できない（文が長いから）"],"that のすぐ後ろが動詞 is のとき、that は主語の役割。消すと文がこわれる。",{en:"The girl that is singing is Aya.",seg:"{N|The girl} {M|that is singing} {V|is} Aya."}),
+ c("まちがいを直すと？　I have a friend which likes animals.",["which → who","likes → like","a friend → friends","animals → animal"],"a friend は人。which はもの専用なので who（または that）に。"),
+ o("私にはピアノを上手に弾ける姉がいます。","I have/a sister/who/can play the piano well","a sister のすぐ後ろに who、そのあと説明。","{S|I} {V|have} {N|a sister} {M|who can play the piano well}."),
+ o("これは駅へ行くバスです。","This is/the bus/which/goes to the station","the bus ← which goes to the station。","This is {N|the bus} {M|which goes to the station}."),
+ o("あなたが昨日会った男性は医者です。","The man/that/you met/yesterday/is/a doctor","主語のかたまりは The man ～ yesterday まで。文の動詞は is。","{N|The man} {M|that you met yesterday} {V|is} a doctor."),
+ o("私は青い目をしたネコを飼っています。","I have/a cat/that/has/blue eyes","a cat ← that has blue eyes。","{S|I} {V|have} {N|a cat} {M|that has blue eyes}."),
+ o("私の母が焼いたクッキーはおいしい。","The cookies/which/my mother baked/are/delicious","主語は The cookies ～ baked まで。複数なので are。","{N|The cookies} {M|which my mother baked} {V|are} delicious."),
+ o("これは多くの人に愛されている歌です。","This is/a song/that/is loved/by many people","a song ← that is loved by many people。","This is {N|a song} {M|that is loved by many people}."),
+ o("私は英語の本がたくさんある図書館によく行きます。","I often go to/a library/which/has/a lot of English books","a library ← which has a lot of English books。","{S|I} {V|often go to} {N|a library} {M|which has a lot of English books}."),
+ y("私には野球が好きな兄がいます。","I have a brother ___ likes baseball.","who,that","先行詞 a brother は人。who（または that）。","{S|I} {V|have} {N|a brother} {M|who likes baseball}."),
+ y("これは私が描いた絵です。","This is the picture ___ I drew.","that,which","先行詞はもの。that か which。","This is {N|the picture} {M|that I drew}."),
+ y("英語を教えている先生","the teacher ___ teaches English","who,that","人なので who か that。","{N|the teacher} {M|who teaches English}")
+]);
+
+add("s4",[
+ c("「これは私が昨日買った本です」を英語にすると？",["This is the book I bought yesterday.","This is the book bought I yesterday.","This is I bought the book yesterday.","This is the book I bought it yesterday."],"the book のすぐ後ろに「I bought（主語＋動詞）」を置くだけ。||最後に it を入れてしまう。本＝it なので二重になる。",{seg:"This is {N|the book} {M|I bought yesterday}."}),
+ c("次の文の意味は？",["これはメグがいちばん好きな映画です。","メグはこの映画をいちばん見ました。","これはいちばんのメグの映画です。","メグはいちばん好きな映画を見ています。"],"the movie ← Meg likes the best。「メグがいちばん好きな映画」。",{en:"This is the movie Meg likes the best.",seg:"This is {N|the movie} {M|Meg likes the best}."}),
+ c("「接触節」とはどんな形？",["名詞のすぐ後ろに〈主語＋動詞〉を置いて説明する形","who を使って説明する形","文と文を and でつなぐ形","動詞の ing 形で説明する形"],"名詞と〈主語＋動詞〉が直接「接触」しているから接触節。目的格の that / which を省略した形と同じ。"),
+ c("(　)に入るのは？",["you lost","lost you"],"the key ← you lost。名詞の後ろは「主語→動詞」の順。",{en:"Is this the key (　) yesterday?",seg:"Is this {N|the key} {M|you lost yesterday}?"}),
+ c("(　)に入るのは？",["I like","I like it"],"the fruit が「好きなもの」なので it はいらない。",{en:"This is the fruit (　) the best.",seg:"This is {N|the fruit} {M|I like the best}."}),
+ c("(　)に入るのは？",["you bought","bought you"],"the book ← you bought。主語→動詞の順。",{en:"Can you show me the book (　)?",seg:"Can you show me {N|the book} {M|you bought}?"}),
+ c("まちがいを直すと？　This is the book I bought it yesterday.",["it を消す","I を消す","bought を buy にする","the を消す"],"the book が「買ったもの」なので、後ろにもう一度 it を書かない。"),
+ c("that を省略できるのはどれ？",["The bike that I want is red.","The boy that runs fast is Ken.","The dog that is sleeping is Pochi.","The bus that goes to Chofu is late."],"that の後ろに主語（I）があるのは1つめだけ。ほかは that のすぐ後ろが動詞なので省略できない。"),
+ o("これは私が京都で撮った写真です。","This is/a picture/I took/in Kyoto","a picture ← I took in Kyoto。","This is {N|a picture} {M|I took in Kyoto}."),
+ o("あれは私がさがしているかばんです。","That is/the bag/I'm looking for","look for（さがす）の for を最後に残すのがポイント。","That is {N|the bag} {M|I'm looking for}."),
+ o("彼女が作ったケーキはおいしかった。","The cake/she made/was/delicious","主語のかたまりは The cake she made。文の動詞は was。","{N|The cake} {M|she made} {V|was} delicious."),
+ o("私たちがよく行く店は駅の近くにあります。","The shop/we often go to/is/near the station","go to の to を最後に残す。","{N|The shop} {M|we often go to} {V|is} near the station."),
+ o("私たちが救わなければならない動物がたくさんいます。","There are/many animals/we must save","many animals ← we must save。","There are {N|many animals} {M|we must save}."),
+ o("あなたがいちばん好きな教科は何ですか。","What is/the subject/you like/the best","the subject ← you like the best。","What is {N|the subject} {M|you like the best}?"),
+ o("沖縄は多くの生徒が訪れたい場所です。","Okinawa is/the place/many students/want to visit","the place ← many students want to visit。","Okinawa is {N|the place} {M|many students want to visit}."),
+ o("これは私の祖父が建てた家です。","This is/the house/my grandfather/built","the house ← my grandfather built。","This is {N|the house} {M|my grandfather built}."),
+ o("私たちはコンサートで演奏する歌を練習しています。","We are practicing/a song/we will play/at the concert","文の中心は「練習している」。何を？→ a song、その説明が we will play at the concert。","{S|We} {V|are practicing} {N|a song} {M|we will play at the concert}."),
+ y("これは私が先週読んだ本です。","This is the book I ___ last week.","read","read の過去形は read（つづりは同じ、発音は「レッド」）。","This is {N|the book} {M|I read last week}."),
+ y("あれは私たちが昨日見たネコです。","That is the cat we ___ yesterday.","saw","see の過去形は saw。","That is {N|the cat} {M|we saw yesterday}."),
+ y("これは父が私にくれた時計です。","This is the watch my father ___ me.","gave","give の過去形は gave。","This is {N|the watch} {M|my father gave me}."),
+ y("これは京子が買ったバッグです。","This is the bag Kyoko ___.","bought","buy の過去形は bought（ボート）。","This is {N|the bag} {M|Kyoko bought}.")
+]);
+
+add("s5",[
+ c("「私はあなたに来てほしい」を英語にすると？",["I want you to come.","I want to you come.","I want you come.","I want come you."],"want＋（してほしい相手）＋to＋動詞。",{seg:"{S|I} {V|want} you to come."}),
+ c("次の文の意味は？",["両親は私に教師になってほしいと思っている。","私は両親に教師になってほしい。","両親は教師になりたい。","私は教師の両親がほしい。"],"want のすぐ後ろの me が「なってほしい相手」。",{en:"My parents want me to be a teacher."}),
+ c("(　)に入るのは？",["her","she"],"動詞 helped の後ろなので「彼女を」の形 her。||she をそのまま使ってしまう。",{en:"Jim helped (　) write a letter."}),
+ c("(　)に入るのは？",["to help","helps"],"want 人 のあとは to＋動詞の原形。",{en:"I want him (　) us."}),
+ c("(　)に入るのは？",["do","to doing"],"help 人 のあとは動詞の原形（to なしでOK）。",{en:"Can you help me (　) my homework?"}),
+ c("(　)に入るのは？",["to take","take","taking"],"ask 人 to ～「人に～するように頼む」。",{en:"I asked my father (　) a picture."}),
+ c("(　)に入るのは？",["to be","be","are"],"tell 人 to ～「人に～するように言う」。",{en:"Ms. Ito told us (　) quiet."}),
+ c("次の to study の意味は？",["勉強するために","勉強すること","勉強するべき","勉強して（うれしい）"],"to 不定詞の「目的」の使い方。図書館に行った目的。",{en:"I went to the library to study."}),
+ c("次の to hear の意味は？",["聞いて（うれしい）","聞くために","聞くこと","聞くべき"],"glad（うれしい）の理由を表す to。",{en:"I am glad to hear the news."}),
+ c("まちがいを直すと？　Yui went to the zoo to saw pandas.",["saw → see","to → for","went → go","pandas → panda"],"to のあとは必ず動詞の原形。saw（過去形）はダメ。"),
+ o("私はあなたにこの本を読んでほしい。","I want/you/to read/this book","want の後ろに相手 you、そのあと to read。","{S|I} {V|want} you to read this book."),
+ o("兄は私が宿題をするのを手伝ってくれました。","My brother/helped/me/do/my homework","help 人 動詞の原形。to はいらない。","{S|My brother} {V|helped} me do my homework."),
+ o("あなたは私に写真を撮ってほしいですか。","Do you want/me/to take/a picture","Do you want ～? の形。相手は me。","Do you want me to take a picture?"),
+ o("先生は私たちに静かにするように言いました。","Our teacher/told/us/to be/quiet","tell 人 to ～。過去なので told。","{S|Our teacher} {V|told} us to be quiet."),
+ o("私は母に早く起こしてくれるよう頼みました。","I asked/my mother/to wake me up/early","ask 人 to ～。","{S|I} {V|asked} my mother to wake me up early."),
+ y("私は彼に歌ってほしい。","I want ___ to sing.","him","「彼に」は him。want の後ろには「～を／に」の形。","{S|I} {V|want} him to sing."),
+ y("私たちは彼女に日本を去ってほしくない。","We don't want her ___ leave Japan.","to","want 人 to ～ の to。","{S|We} {V|don't want} her to leave Japan."),
+ y("メグはケイにギターを弾いてほしいと思っています。","Meg wants Kei ___ play the guitar.","to","wants Kei to play。","{S|Meg} {V|wants} Kei to play the guitar.")
+]);
+
+add("cul",[
+ y("こたつはテーブルのようなものです。","A kotatsu is ___ a table.","like","「～のような」は like。","A kotatsu is like a table."),
+ y("すしは世界中の多くの人に愛されています。","Sushi is ___ by many people around the world.","loved","「愛されている」は is loved（受け身）。","Sushi is loved by many people around the world."),
+ y("三味線はギターに似ていると思います。","I think the shamisen is ___ the guitar.","like","「似ている」→「～のようだ」と言いかえて like。",""),
+ y("ふろしきはバッグとしても使えます。","You can use a furoshiki ___ a bag.","as","「～として」は as。",""),
+ c("「こどもの日は5月5日です」を英語にすると？",["Children's Day is May 5.","Children's Day is in May 5.","Children's Day is at May 5.","Children's Day May is 5."],"「～は…日です」は is のあとに日付。日付の前に in や at はつけない。"),
+ c("「この城は100年前に建てられました」を英語にすると？",["This castle was built 100 years ago.","This castle built 100 years ago.","This castle was build 100 years ago.","This castle was built before 100 years."],"「100年の歴史がある」→「100年前に建てられた」と言いかえる。was built（受け身）、～前は ago。"),
+ c("「おにぎりは手で食べるのがおすすめだよ」をかんたんに英語にすると？",["Eat rice balls with your hands!","You eat rice balls your hands!","Eating rice balls hands!","Rice balls eat with your hands!"],"「おすすめ」→「手で食べてね」と命令文に言いかえる。動詞 Eat から始める。"),
+ c("「その花火はきっと心に残るよ」を英語にすると？",["I'm sure you will never forget the fireworks.","I'm sure you will always forget the fireworks.","I'm sure you will never remember the fireworks.","I'm sure the fireworks will forget you."],"「心に残る」→「決して忘れない」never forget と言いかえる。"),
+ c("「柔道はブラジルでもとても人気です」を英語にすると？",["Judo is very popular in Brazil, too.","Judo is very popular Brazil in, too.","Judo very popular is in Brazil, too.","Judo is too very popular in Brazil."],"「人気がある」は popular。「～も」は文の最後に too。"),
+ o("これは葛飾北斎が作った版画です。","This is/a print/that/Katsushika Hokusai/made","a print ← that Katsushika Hokusai made。日本文化紹介でも関係代名詞が大活躍。","This is {N|a print} {M|that Katsushika Hokusai made}."),
+ o("三社祭は多くの人が毎年楽しむお祭りです。","Sanja Matsuri is/a festival/that/many people/enjoy every year","a festival ← that many people enjoy every year。","Sanja Matsuri is {N|a festival} {M|that many people enjoy every year}."),
+ o("私たちは夏にこれを使います。","We/use/this/in summer","だれが→どうする→なにを→いつ。","{S|We} {V|use} this in summer.")
+]);
+/* 文化問題のうちセグがないものを補う */
+Q.filter(x=>x.st==="cul"&&x.seg==="").forEach(x=>x.seg=null);
+
+add("voc",[
+ y("悲しみ（名詞）","s_______","sadness","sad（悲しい）＋ness（こと）＝ sadness。"),
+ y("怒り（名詞）","a____","anger","angry（怒った）の名詞形が anger。"),
+ y("（心などを）いやす","h___","heal","Music can heal us.（音楽は私たちをいやすことができる）"),
+ y("創り出す","c_____","create","creative（創造的な）の仲間。"),
+ y("中心的な、重要な","c______","central","center（中心）＋al。"),
+ y("感情","e______","emotion","e＋motion（動き）＝心の動き。"),
+ y("進化","e________","evolution","evolve（進化する）の名詞形。"),
+ y("公平な","f___","fair","It's not fair.（ずるいよ）でよく使う。"),
+ y("衣装","c______","costume","a traditional costume（伝統的な衣装）。"),
+ y("そで","s_____","sleeve","a long sleeve（長そで）。"),
+ y("翻訳する","t________","translate","translate A into B（AをBに翻訳する）。"),
+ y("連絡をとる","c______","contact","contact me（私に連絡して）。"),
+ y("多様性","d________","diversity","いろいろな人がいて、ちがいを受け入れること。"),
+ y("受け入れる","a_____","accept","accept various differences（さまざまなちがいを受け入れる）。"),
+ y("達成する","a______","achieve","achieve the same goal（同じ目標を達成する）。"),
+ y("成功","s______","success","succeed（成功する）の名詞形。cとsが2つずつ。"),
+ y("人気のある","p______","popular","pop＋u＋lar。"),
+ y("運動選手","a______","athlete","Mr. Ohtani is a famous athlete."),
+ c("tempo の意味は？",["テンポ、速さ","気温","時間","寺"],"音楽の速さのこと。"),
+ c("listener の意味は？",["聞き手","話し手","歌手","先生"],"listen（聞く）＋er（人）。"),
+ c("original の意味は？",["独創的な","ふつうの","古い","有名な"],"ほかにないオリジナルの、という意味。"),
+ c("technology の意味は？",["科学技術","教科書","自然","法律"],"テクノロジー。"),
+ c("nowadays の意味は？",["近ごろは","昔は","明日は","ときどき"],"now（今）＋days。"),
+ c("be aware of ～ の意味は？",["～に気づいている","～をこわがる","～が得意だ","～に似ている"],"We are aware of the importance.（私たちはその大切さに気づいている）"),
+ c("deal with ～ の意味は？",["～に対処する","～と取引する","～を配る","～と遊ぶ"],"I have to deal with this issue.（この問題に対処しなければならない）"),
+ c("be able to ～ の意味は？",["～することができる","～したい","～しなければならない","～するつもりだ"],"can と同じ意味。I am able to sing English songs."),
+ c("suffer from ～ の意味は？",["～に苦しむ","～から出発する","～を楽しむ","～を探す"],"They are suffering from internet addiction."),
+ c("facility の意味は？",["設備、施設","顔","事実","家族"],"universal design facilities（ユニバーサルデザインの設備）。"),
+ c("flea market の意味は？",["フリーマーケット","魚市場","花屋","スーパー"],"flea はノミ。古いものを売り買いする市場。"),
+ c("recognize の意味は？",["認識する、それとわかる","忘れる","記録する","くり返す"],"I recognized her voice.（彼女の声だとわかった）")
+]);
+
+add("lis",[
+ c("聞こえた英文の意味は？",["これは私が昨日買ったかばんです。","私は昨日かばんを買いに行きました。","これは昨日私が売ったかばんです。","かばんは昨日買われました。"],"the bag ← I bought yesterday。",{say:"This is the bag I bought yesterday."}),
+ c("聞こえた英文の意味は？",["私には中国出身の友達がいます。","私は中国へ行った友達がいます。","友達は中国に行きたがっています。","私は中国の友達に会いました。"],"a friend ← who is from China。",{say:"I have a friend who is from China."}),
+ c("聞こえた英文の意味は？",["ボールを持って立っている少年はユウタです。","ユウタはボールを持って立っていました。","少年はユウタにボールをあげました。","ユウタは少年とボールで遊んでいます。"],"The boy ← standing with a ball。",{say:"The boy standing with a ball is Yuta."}),
+ c("聞こえた英文の意味は？",["私はあなたに手伝ってほしい。","私はあなたを手伝いたい。","あなたは私を手伝いました。","私たちは手伝うことができます。"],"want you to help。",{say:"I want you to help me."}),
+ c("聞こえた英文の意味は？",["沖縄は私がいちばん訪れたい場所です。","私は沖縄をいちばん訪れました。","沖縄はいちばん有名な場所です。","私は沖縄から来ました。"],"the place ← I want to visit the most。",{say:"Okinawa is the place I want to visit the most."}),
+ c("聞こえた英文の意味は？",["ゲームをやめる時間ですよ。","ゲームをする時間です。","ゲームはいつ終わりますか。","ゲームを15分してもいいですか。"],"It's time to ～「～する時間です」。",{say:"It's time to stop playing the game."}),
+ c("聞こえた英文の意味は？",["あと15分だけしてもいいですか。","15分前に始めました。","15分で終わります。","15分待ってください。"],"Can I ～?「～してもいいですか」。",{say:"Can I play for just fifteen more minutes?"}),
+ c("聞こえた英文の意味は？",["これは多くの国で見られているアニメです。","私は多くの国でアニメを見ました。","多くの国にアニメがあります。","このアニメは外国で作られました。"],"the anime ← that is watched in many countries。",{say:"This is the anime that is watched in many countries."})
+]);
+
+const PASS = {
+ p1:{ti:"Music Brings Us Together",tx:"Hi, I'm Kenta. I want to talk about music.<br>When I am sad, I listen to a song my grandmother taught me. The song always makes me feel better. Music can heal people.<br>Last year, my class sang a song at the school festival. Some students were good at singing, and some were not. But we practiced together every day. On the day of the festival, everyone sang with a big smile.<br>I learned that music is something people can share. It brings people together. I want to make songs that make people happy in the future.",nt:"(注) taught：teach（教える）の過去形　heal：いやす　share：分かち合う"},
+ p2:{ti:"At the Station",tx:"Emma: Look, Daichi. This station has an elevator that is very large.<br>Daichi: Yes. People in wheelchairs can use it easily. People carrying heavy bags can use it, too.<br>Emma: There are also signs with pictures. People who can't read Japanese can understand them.<br>Daichi: I see. These things are designed for everyone.<br>Emma: That's right. That's the idea of universal design.<br>Daichi: I want to find more things like that in our town.",nt:"(注) wheelchair：車いす　sign：表示　design：設計する"},
+ p3:{ti:"Our Soccer Team",tx:"Hello, everyone. I'm Mai. I belong to a soccer club in my town.<br>Our team has players from different countries. One player is from Brazil, and another is from Korea. At first, we couldn't talk well because of language differences. So we used easy English and gestures.<br>Little by little, we became good friends. We had the same goal: to win the city tournament. Last month, we finally won it!<br>Our team taught me something important. People with different backgrounds can work together and achieve a goal. I think this is important for the future of Japan.",nt:"(注) belong to：～に所属する　gesture：身ぶり　tournament：大会　background：生い立ち"}
+};
+add("read",[
+ c("ケンタは悲しいとき、何をしますか。",["祖母が教えてくれた歌を聞く","祖母に電話する","学校で歌を歌う","新しい歌を作る"],"2文目に a song my grandmother taught me（祖母が教えてくれた歌）。ここも接触節！",{p:"p1"}),
+ c("文化祭で、クラスはどうなりましたか。",["全員が笑顔で歌った","歌が上手な人だけが歌った","練習しなかった","歌うのをやめた"],"everyone sang with a big smile。",{p:"p1"}),
+ c("ケンタがいちばん伝えたいことは？",["音楽は人々を一つにする","歌が上手になりたい","文化祭は楽しい","祖母が好きだ"],"最後の段落に結論。It brings people together.",{p:"p1"}),
+ c("駅の大きなエレベーターを使いやすい人として、本文に出てこないのは？",["小さな子ども","車いすの人","重いかばんを持った人"],"本文に出てくるのは車いすの人と重いかばんを持った人。",{p:"p2"}),
+ c("絵のついた表示は、だれの役に立ちますか。",["日本語が読めない人","目が見えない人","子どもだけ","駅員さん"],"People who can't read Japanese（日本語が読めない人）。who の関係代名詞。",{p:"p2"}),
+ c("ユニバーサルデザインの考え方は？",["すべての人のために設計すること","外国人のためだけに作ること","駅を大きくすること","絵をたくさんかくこと"],"These things are designed for everyone.",{p:"p2"}),
+ c("最初、チームはなぜうまく話せなかったのですか。",["言葉がちがったから","仲が悪かったから","練習がなかったから","英語を知らなかったから"],"because of language differences。",{p:"p3"}),
+ c("チームの共通の目標は？",["市の大会で優勝すること","英語を話せるようになること","外国に行くこと","友達をふやすこと"],"the same goal: to win the city tournament。",{p:"p3"}),
+ c("マイが考える大切なことは？",["ちがう背景をもつ人が協力して目標を達成すること","サッカーが上手になること","外国語を勉強すること","大会で勝ちつづけること"],"最後の段落。People with different backgrounds can work together and achieve a goal.",{p:"p3"})
+]);
+
+const GLOSS={"a":"1つの（数えられるものの前）","about":"～について","accept":"受け入れる","achieve":"達成する","after":"～のあとで","ago":"（今から）～前に","also":"～もまた","always":"いつも","am":"～です（I のとき）","an":"1つの（母音の前の a）","and":"～と、そして","anger":"怒り","animal":"動物","animals":"動物（animal の複数形）","anime":"アニメ","another":"もう1つの、別の","are":"～です、～がいる（you / we / they / 複数のとき）","around":"～のまわりに、～中で","as":"～として","asked":"ask（たずねる・頼む）の過去形","at":"～で（場所・時刻）","backgrounds":"生い立ち、背景（複数形）","bag":"かばん","bags":"かばん（複数形）","baked":"bake（焼く）の過去形","ball":"ボール","balls":"ボール（複数形）、rice balls＝おにぎり","baseball":"野球","be":"～である（is / am / are のもとの形）","beautiful":"美しい","became":"become（～になる）の過去形","because":"なぜなら、～なので","before":"～の前に","belong":"所属する（belong to ～）","bench":"ベンチ","best":"いちばん（like ～ the best＝～がいちばん好き）","better":"よりよい（feel better＝気分がよくなる）","big":"大きい","bike":"自転車","bird":"鳥","blue":"青い","book":"本","books":"本（複数形）","bought":"buy（買う）の過去形","boy":"少年","brazil":"ブラジル（国名）","brings":"bring（持ってくる）、bring together＝まとめる・一つにする","brother":"兄、弟","build":"建てる","built":"build（建てる）の過去形・過去分詞（建てられた）","bus":"バス","but":"しかし","buy":"買う","by":"～によって、～のそばに","cake":"ケーキ","can":"～できる","can't":"～できない（can not）","car":"車","carrying":"carry（運ぶ・持つ）の ing 形","castle":"城","cat":"ネコ","cats":"ネコ（複数形）","central":"中心的な","changed":"change（変える）の過去形","children's":"子どもたちの（Children's Day＝こどもの日）","china":"中国","chofu":"調布（地名）","city":"市、都市","class":"クラス","club":"クラブ","come":"来る","concert":"コンサート","contact":"連絡をとる","cookies":"クッキー（複数形）","costume":"衣装","couldn't":"～できなかった（could not）","countries":"国（country の複数形）","create":"創り出す","cute":"かわいい","day":"日","delicious":"とてもおいしい","design":"デザイン、設計","designed":"design（設計する）の過去分詞（設計された）","differences":"ちがい（複数形）","different":"ちがう、いろいろな","diversity":"多様性","do":"する（疑問文・否定文をつくる言葉としても使う）","doctor":"医者","dog":"イヌ","doing":"do（する）の ing 形","don't":"～しない（do not）","door":"ドア","drew":"draw（描く）の過去形","early":"早く","ears":"耳（複数形）","easily":"簡単に","easy":"簡単な、やさしい","eat":"食べる","eating":"eat の ing 形","elevator":"エレベーター","emotion":"感情","english":"英語","enjoy":"楽しむ","every":"毎～、すべての","everyone":"みんな","evolution":"進化","eyes":"目（複数形）","fair":"公平な","fast":"速く","father":"父","feel":"感じる","festival":"祭り、文化祭","fifteen":"15","finally":"ついに","find":"見つける","fireworks":"花火","first":"最初に、最初の","flying":"fly（飛ぶ）の ing 形","for":"～のために、～の間","forget":"忘れる","french":"フランス語","friend":"友達","friends":"友達（複数形）","from":"～から、～出身の","fruit":"果物","furoshiki":"ふろしき","future":"未来、将来","game":"ゲーム、試合","gave":"give（あげる）の過去形","gestures":"身ぶり（複数形）","girl":"女の子","glad":"うれしい","go":"行く","goal":"目標","goes":"go（行く）の三単現","good":"よい、上手な","grandfather":"祖父","grandmother":"祖母","guitar":"ギター","had":"have（持つ）の過去形","hands":"手（複数形）","happy":"幸せな、うれしい","has":"have（持つ）の三単現","have":"持っている、飼っている（have to＝～しなければならない）","he":"彼は","heal":"いやす","hear":"聞く、聞こえる","heavy":"重い","hello":"こんにちは","help":"手伝う、助ける","helped":"help の過去形","helps":"help の三単現","her":"彼女を、彼女の","hi":"やあ","him":"彼を、彼に","hokusai":"北斎（人名）","homework":"宿題","house":"家","i":"私は","i'm":"私は～です（I am）","idea":"考え","important":"大切な","in":"～の中に、～で","is":"～です、～がある・いる（he / she / it / 1つのもの）","it":"それ","it's":"それは～です（it is）","japan":"日本","japanese":"日本の、日本語、日本人","judo":"柔道","just":"ちょうど、ただ～だけ","key":"かぎ","know":"知っている","knows":"know の三単現","language":"言語、言葉","languages":"言語（複数形）","large":"大きい","last":"この前の（last year＝去年）","late":"遅れた","learned":"learn（学ぶ）の過去形","leave":"去る、出発する","letter":"手紙","library":"図書館","life":"人生、生活","like":"好きだ、～のような","likes":"like の三単現","listen":"聞く（listen to ～）","little":"小さい（little by little＝少しずつ）","lives":"live（住む）の三単現","long":"長い","look":"見る（look at ～＝～を見る、look for ～＝～をさがす）","looking":"look の ing 形（looking for＝さがしている）","lost":"lose（なくす）の過去形","lot":"たくさん（a lot of ～＝たくさんの～）","loved":"love（愛する）の過去分詞（愛されている）","made":"make（作る）の過去形・過去分詞（作られた）","make":"作る、（人を）～にする","makes":"make の三単現","man":"男性","many":"たくさんの","matsuri":"祭り","may":"5月","me":"私を、私に","met":"meet（会う）の過去形","minutes":"分（時間の単位、複数形）","month":"月、1か月","more":"もっと","morning":"朝","most":"いちばん","mother":"母","movie":"映画","ms":"～さん、～先生（女性）","music":"音楽","must":"～しなければならない","my":"私の","near":"～の近くに","never":"決して～ない","news":"知らせ、ニュース","next":"となりの、次の","not":"～ない","of":"～の","often":"よく、しばしば","okinawa":"沖縄","on":"～の上に、～（曜日・日付）に","one":"1つ、1人","osaka":"大阪","our":"私たちの","panda":"パンダ","pandas":"パンダ（複数形）","parents":"両親","park":"公園","pen":"ペン","people":"人々","phone":"電話、スマホ","piano":"ピアノ","picture":"写真、絵","pictures":"写真、絵（複数形）","pilot":"パイロット","place":"場所","play":"（スポーツを）する、（楽器を）弾く、遊ぶ","player":"選手","players":"選手（複数形）","playing":"play の ing 形","plays":"play の三単現","pochi":"ポチ（イヌの名前）","popular":"人気のある","practiced":"practice（練習する）の過去形","practicing":"practice の ing 形","print":"版画","quiet":"静かな","read":"読む（過去形も read、発音は「レッド」）","red":"赤い","remember":"覚えている","rice":"米、ごはん","right":"正しい","running":"run（走る）の ing 形","runs":"run（走る）の三単現","sad":"悲しい","sadness":"悲しみ","same":"同じ","sang":"sing（歌う）の過去形","save":"救う","saw":"see（見る）の過去形","school":"学校","see":"見る、会う","share":"分かち合う","she":"彼女は","shop":"店","show":"見せる","signs":"表示、標識（複数形）","sing":"歌う","singer":"歌手","singing":"sing の ing 形","sister":"姉、妹","sleeping":"sleep（眠る）の ing 形","sleeve":"そで","smile":"笑顔","so":"だから、とても","soccer":"サッカー","some":"いくつかの、何人かの","something":"何か","song":"歌","songs":"歌（複数形）","speak":"話す","speaks":"speak の三単現","spoken":"speak（話す）の過去分詞（話されている）","standing":"stand（立つ）の ing 形","station":"駅","stop":"やめる、止まる","students":"生徒（複数形）","study":"勉強する","studying":"study の ing 形","subject":"教科","success":"成功","summer":"夏","sure":"確信して（I'm sure ～＝きっと～だと思う）","sushi":"すし","table":"テーブル","take":"（写真を）撮る、持っていく","taken":"take の過去分詞（撮られた）","taking":"take の ing 形","talk":"話す","talking":"talk の ing 形","taught":"teach（教える）の過去形","teacher":"先生","teaches":"teach（教える）の三単現","team":"チーム","tennis":"テニス","that":"あれ、その／（関係代名詞）前の名詞の説明が始まる合図","that's":"それは～です（that is）","the":"その（決まったものの前）","them":"彼らを、それらを","there":"そこに（There is / are ～＝～がある・いる）","these":"これらの","they":"彼らは、それらは","things":"もの、こと（複数形）","think":"思う","this":"これ、この","three":"3","time":"時間（It's time to ～＝～する時間です）","to":"～へ、～に／（to＋動詞）～すること・～するために","together":"一緒に","told":"tell（言う）の過去形","too":"～も（文の最後）","took":"take（撮る）の過去形","tournament":"大会","town":"町","translate":"翻訳する","uncle":"おじ","understand":"理解する","universal":"すべての人のための（universal design＝ユニバーサルデザイン）","up":"上へ（wake up＝起きる・起こす）","us":"私たちを、私たちに","use":"使う","used":"use の過去形","very":"とても","visit":"訪れる","wake":"起こす、目覚める（wake up）","want":"ほしい、～したい（want 人 to ～＝人に～してほしい）","wants":"want の三単現","was":"～だった（is の過去形）","watch":"時計、見る","watched":"watch（見る）の過去形・過去分詞（見られている）","we":"私たちは","week":"週","well":"上手に","went":"go（行く）の過去形","were":"～だった（are の過去形）","what":"何","wheelchairs":"車いす（複数形）","when":"～のとき、いつ","which":"どちら／（関係代名詞）もの・動物の説明が始まる合図","white":"白い","who":"だれ／（関係代名詞）人の説明が始まる合図","will":"～するつもりだ、～だろう","win":"勝つ、優勝する","window":"窓","with":"～と一緒に、～を持った、～で","won":"win（勝つ）の過去形","work":"働く、協力して取り組む","works":"work の三単現","world":"世界","write":"書く","writing":"write の ing 形","written":"write の過去分詞（書かれた）","wrote":"write の過去形","year":"年","years":"年（複数形）","yes":"はい","yesterday":"昨日","you":"あなたは、あなたを","your":"あなたの","kotatsu":"こたつ","shamisen":"三味線","athlete":"運動選手","tempo":"テンポ、速さ","listener":"聞き手","original":"独創的な","technology":"科学技術","nowadays":"近ごろは","aware":"気づいている（be aware of ～）","deal":"対処する（deal with ～）","able":"できる（be able to ～）","suffer":"苦しむ（suffer from ～）","facility":"設備、施設","flea":"ノミ（flea market＝フリーマーケット）","market":"市場","recognize":"認識する、それとわかる"};
+const NAMES={"aya": "アヤ（人名）", "daichi": "大地（人名）", "emma": "エマ（人名）", "ito": "伊藤（人名）", "jim": "ジム（人名）", "kei": "ケイ（人名）", "ken": "ケン（人名）", "kenta": "健太（人名）", "kyoko": "京子（人名）", "kyoto": "京都（地名）", "mai": "マイ（人名）", "meg": "メグ（人名）", "mika": "ミカ（人名）", "sato": "佐藤（人名）", "sanja": "三社（浅草の三社祭）", "yuta": "ユウタ（人名）", "korea": "韓国（国名）", "katsushika": "葛飾（人名・地名）"};
+/* ===== ステージの学習スライド ===== */
+const LESSONS = {
+ s0:[
+  {h:"英語は「結論が先」",p:"英語は、いちばん大事なことを先に言って、説明を後ろにつけたす言葉です。日本語とは順番が逆になります。",demo:true},
+  {h:"色で見分けよう",p:"このアプリでは、英文を色ブロックで表示します。点線のついた単語はタップすると意味が出ます。下の英文でためしてみよう。",seg:"{S|I} {V|have} {N|a friend} {M|who can run fast}.",legend:true},
+  {h:"今回のテストのカギ",p:"関係代名詞も、接触節も、長文も、ぜんぶ「名詞を後ろから説明する」の1つの仕組みでできています。これがわかれば、テスト範囲の半分以上が解けるようになります。",seg:"This is {N|the book} {M|I bought yesterday}."}
+ ],
+ s1:[
+  {h:"英語の基本の順番",p:"だれが → どうする → なにを → どこで → いつ。この順番は、ほとんど変わりません。",seg:"{S|Ken} {V|plays} soccer in the park every day."},
+  {h:"2番目はいつも動詞",p:"日本語は「ケンは毎日公園でサッカーをする」と、動詞が最後。英語は主語のすぐ後ろに動詞が来ます。迷ったら「だれが、どうする」をまず言おう。"}
+ ],
+ s2:[
+  {h:"説明は名詞の後ろ",p:"日本語は「テーブルの上の→ペン」。英語は「the pen ← on the table」。名詞を先に言って、説明を後ろにつけます。",seg:"{N|the pen} {M|on the table}"},
+  {h:"後ろから説明する4つの形",p:"どれも「名詞 → 説明」の順番です。",segs:["{N|the boy} {M|with a ball}　ボールを持った少年","{N|the boy} {M|playing soccer}　サッカーをしている少年","{N|a picture} {M|taken by Masaru}　マサルに撮られた写真","{N|something} {M|to drink}　何か飲むもの"]},
+  {h:"文の中ではかたまりで見る",p:"名詞と説明をひとかたまりにすると、文の動詞が見つかります。",seg:"{N|The boy} {M|standing with a ball} {V|is} Yuta."}
+ ],
+ s3:[
+  {h:"関係代名詞は「説明スタート」の合図",p:"who / which / that は、「ここから前の名詞の説明が始まるよ」という合図です。",seg:"I have {N|a friend} {M|who can run fast}."},
+  {h:"2つの文がつながるしくみ",p:"I have a friend. ＋ He can run fast.<br>He（＝a friend）が who に変身して、2つの文が1つになります。変身したので He は消えます。",seg:"I have {N|a friend} {M|who can run fast}."},
+  {h:"どれを使う？",table:true,p:"迷ったら that。that は人にも、ものにも使えます。"},
+  {h:"もう1つの形（目的格）",p:"This is a cap. ＋ Ken uses it every day.<br>it が that に変身して前に移動します。後ろに it は残りません。",seg:"This is {N|a cap} {M|that Ken uses every day}."}
+ ],
+ s4:[
+  {h:"接触節＝that を省いた形",p:"that の後ろに「主語＋動詞」があるとき、that は省略できます。名詞と〈主語＋動詞〉が直接くっつくので「接触節」と言います。",seg:"This is {N|the book} {M|I bought yesterday}."},
+  {h:"見分け方",p:"名詞のすぐ後ろに「I / you / he / my mother」などの主語が来たら、接触節のサイン。そこから説明が始まります。",seg:"{N|The cake} {M|she made} {V|was} delicious."},
+  {h:"よくあるまちがい",p:"This is the book I bought <s>it</s> yesterday.<br>the book が「買ったもの」なので、it をもう一度書くと二重になります。"}
+ ],
+ s5:[
+  {h:"want 人 to ～",p:"「（人）に～してほしい」は、want のすぐ後ろに相手、そのあと to＋動詞。",seg:"{S|I} {V|want} you to make lunch."},
+  {h:"tell / ask も同じ形",p:"tell 人 to ～：人に～するように言う<br>ask 人 to ～：人に～するように頼む"},
+  {h:"help 人 ～ は to なし",p:"help のときは to をつけずに動詞の原形。<br>I helped you wash the car.（私はあなたが車を洗うのを手伝った）<br>相手が代名詞なら me / him / her / us / them の形にします。"}
+ ],
+ cul:[{h:"言いかえがコツ",p:"「100年の歴史を持つ」→「100年前に建てられた」<br>「心に残る」→「決して忘れない」<br>「おすすめ」→「～してね（命令文）」<br>むずかしい日本語は、かんたんな日本語に直してから英語にしよう。"}],
+ voc:[{h:"単語は音とかたまりで",p:"sad＋ness（悲しみ）、evolu＋tion（進化）、listen＋er（聞き手）のように、部品に分けると覚えやすくなります。答えたあとにスピーカーを押して、音でも確認しよう。"}],
+ lis:[{h:"聞こえた順に意味をとる",p:"英語は聞こえた順番のまま「だれが→どうする→なにを（その説明）」と理解しよう。ゆっくり再生も使えます。"}],
+ read:[{h:"長文のコツ",p:"①問題を先に読む　②最後の段落で結論をつかむ　③関係代名詞や接触節は「名詞の説明」とかたまりで読む。<br>全部の単語がわからなくても大丈夫です。"}]
+};
+
+/* ===== テストまでの計画 ===== */
+const PLAN = [
+ {to:"2026-11-02",st:["s1","s2"],msg:"英語の地図と「後ろから説明」"},
+ {to:"2026-11-04",st:["s3"],msg:"関係代名詞 who / which / that"},
+ {to:"2026-11-06",st:["s3","s4"],msg:"関係代名詞と接触節"},
+ {to:"2026-11-08",st:["s4","s5"],msg:"接触節と want 人 to"},
+ {to:"2026-11-09",st:["cul","voc","lis"],msg:"日本文化紹介・単語・リスニング"},
+ {to:"2026-11-10",st:["read","voc"],msg:"長文読解と単語"},
+ {to:"2026-11-12",st:[],msg:"総復習（まちがえた問題を中心に）",review:true},
+ {to:"2099-12-31",st:[],msg:"ぜんぶの復習",review:true}
+];
+
+/* ===== レベルとバッジ ===== */
+const LV=[0,100,250,450,700,1000,1400,1900,2500,3200,4000];
+const TITLES=["ことばのタマゴ","ABCルーキー","ワードハンター","ブロック職人","センテンスビルダー","後ろ説明マスター","関係代名詞ナイト","長文レンジャー","イングリッシュ・ストライカー","ブロック・レジェンド","英語マスター"];
+const BADGES=[
+ {k:"first",nm:"はじめの一歩"},{k:"st3",nm:"3日連続"},{k:"st7",nm:"7日連続"},{k:"perfect",nm:"パーフェクト"},
+ {k:"combo10",nm:"10コンボ"},{k:"m_s2",nm:"後ろ説明★"},{k:"m_s3",nm:"関係代名詞★"},{k:"m_s4",nm:"接触節★"},{k:"m_s5",nm:"want人to★"},{k:"q200",nm:"200問回答"}
+];
+
+/* ===== 保存 ===== */
+const KEY="eigo-block-lab-v1";
+let S=load();
+function blank(){return{v:1,items:{},days:{},xp:0,bestCombo:0,badges:{},snd:true,total:0,log:[],upd:0,unk:{}}}
+function load(){try{const r=localStorage.getItem(KEY);if(r)return Object.assign(blank(),JSON.parse(r))}catch(e){}return blank()}
+function save(){S.upd=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ===== 日付 ===== */
+function ymd(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function dn(s){const[a,b,c]=s.split("-").map(Number);return Math.round(Date.UTC(a,b-1,c)/864e5)}
+const TODAY=()=>dn(ymd());
+const INTERVAL=[0,1,2,4,7,12];
+function daysLeft(){return dn(TEST_DATE)-TODAY()}
+function planToday(){const t=ymd();return PLAN.find(p=>t<=p.to)}
+
+/* ===== ユーティリティ ===== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const wkey=w=>w.toLowerCase().replace(/^'+|'+$/g,"");
+function lookup(w){const k=wkey(w);return GLOSS[k]||NAMES[k]||(k.endsWith("s")&&GLOSS[k.slice(0,-1)]?GLOSS[k.slice(0,-1)]+"（複数形・三単現）":null)}
+/* 英文の単語を、タップで意味が出る形にする */
+function wrapEn(text){
+  return String(text).split(/(<br>)/).map(part=>part==="<br>"?part:part.split(/([A-Za-z][A-Za-z']*)/).map((t,i)=>{
+    if(i%2===0)return esc(t);
+    const m=lookup(t);return m?`<span class="w${(S.unk||{})[wkey(t)]?" hit":""}" data-w="${esc(wkey(t))}">${esc(t)}</span>`:esc(t);
+  }).join("")).join("");
+}
+function wordsIn(texts,hide){
+  const seen=new Set(),out=[];
+  texts.filter(Boolean).join(" ").replace(/<br>/g," ").replace(/\{\w\|/g," ").replace(/_{2,}/g," ").replace(/\(　\)/g," ").split(/[^A-Za-z']+/).forEach(t=>{
+    const k=wkey(t);if(!k||seen.has(k)||(hide&&hide.has(k))||!lookup(k))return;seen.add(k);out.push(k)});
+  return out;
+}
+function wordListHTML(ws){return`<div class="wlist">${ws.map(k=>`<button class="witem${(S.unk||{})[k]?" hit":""}" data-wi="${esc(k)}"><b>${esc(k)}</b>${esc(lookup(k))}</button>`).join("")}</div>`}
+function qWords(q,after){
+  if(q.p&&!after)return[];
+  const hide=new Set();
+  if(!after){(q.o||[]).concat(q.a||[]).join(" ").split(/[^A-Za-z']+/).forEach(t=>t&&hide.add(wkey(t)))}
+  const texts=[q.en,q.t==="y"&&q.st!=="voc"?q.s:null,...(q.b||[])];
+  if(after)texts.push(q.say,q.seg,...(q.o||[]),...(q.a||[]),q.st==="voc"&&q.t==="c"?q.q.split(" の意味")[0]:null);
+  else if(q.st!=="lis")texts.push(q.say);
+  return wordsIn(texts,hide);
+}
+function showWord(k){
+  const m=lookup(k);if(!m)return;
+  S.unk=S.unk||{};S.unk[k]=(S.unk[k]||0)+1;save();
+  document.querySelectorAll(`[data-w="${CSS.escape(k)}"],[data-wi="${CSS.escape(k)}"]`).forEach(e=>e.classList.add("hit"));
+  const fx=document.getElementById("sheet");
+  fx.innerHTML=`<div class="sheet" role="dialog" aria-label="単語の意味"><div class="inner">
+    <div class="row" style="justify-content:space-between"><span class="wd-en">${esc(k)}</span><button class="btn small" id="shc">とじる</button></div>
+    <div class="wd-jp">${esc(m)}</div>
+    <div class="row"><button class="spk" id="shs">${ICON.spk}発音を聞く</button><span class="sub">この単語は「調べた単語」に入りました</span></div>
+  </div></div>`;
+  document.getElementById("shc").onclick=()=>{fx.innerHTML=""};
+  document.getElementById("shs").onclick=()=>speak(k);
+  speak(k);
+}
+document.addEventListener("click",e=>{
+  const w=e.target.closest("[data-w],[data-wi]");
+  if(w){e.stopPropagation();showWord(w.dataset.w||w.dataset.wi);return}
+  const sh=document.getElementById("sheet");if(sh&&sh.innerHTML&&!e.target.closest(".sheet"))sh.innerHTML="";
+});
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const stage=k=>STAGES.find(s=>s.k===k);
+const ROLE={S:"だれが",V:"どうする",N:"説明される名詞",M:"↩ 後ろから説明"};
+function segHTML(seg){
+  if(!seg)return"";
+  const out=[];let last=0;const re=/\{(\w)\|([^}]+)\}/g;let m;
+  while((m=re.exec(seg))){
+    const pre=seg.slice(last,m.index).trim();
+    if(pre)out.push(`<span class="chip X">${wrapEn(pre)}<small>&nbsp;</small></span>`);
+    out.push(`<span class="chip ${m[1]}">${wrapEn(m[2])}<small>${ROLE[m[1]]}</small></span>`);
+    last=re.lastIndex;
+  }
+  const rest=seg.slice(last).trim();
+  if(rest)out.push(`<span class="chip X">${wrapEn(rest)}<small>&nbsp;</small></span>`);
+  return`<div class="seg">${out.join("")}</div>`;
+}
+const LEGEND=`<div class="legend"><span><i style="background:var(--s)"></i>だれが</span><span><i style="background:var(--v)"></i>どうする</span><span><i style="background:var(--n)"></i>説明される名詞</span><span><i style="background:var(--m)"></i>後ろから説明</span></div>`;
+const ICON={
+ spk:'<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z"/></svg>',
+ play:'<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>',
+ star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21l1.4-7L2 9.3l7-.8z"/></svg>',
+ back:'<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>',
+ sound:'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>',
+ mute:'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>'
+};
+
+/* ===== 読み上げ ===== */
+let voice=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices();voice=vs.find(v=>/en-US/i.test(v.lang)&&/Google|Samantha|Aria|Jenny/i.test(v.name))||vs.find(v=>/^en/i.test(v.lang))||null}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
+function speak(text,slow){
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text.replace(/<br>/g," ").replace(/\(　\)/g," blank "));u.lang="en-US";if(voice)u.voice=voice;u.rate=slow?0.6:0.9;speechSynthesis.speak(u)}catch(e){}
+}
+function sayText(q){
+  if(q.say)return q.say;
+  if(q.t==="o")return q.b.join(" ");
+  if(q.t==="y"&&/[a-z]/i.test(q.s)&&!/_{3,}$/.test(q.s.trim())&&q.st!=="voc")return q.s.replace(/_{3,}/,q.a[0]);
+  if(q.t==="y"&&q.st==="voc")return q.a[0];
+  if(q.en)return q.en.replace("(　)",q.o[0]);
+  if(q.st==="voc")return q.q.split(" の意味")[0].replace(/～/g,"").trim();
+  if(/^[A-Z"]/.test(q.o[0]))return q.o[0];
+  return"";
+}
+
+/* ===== 効果音 ===== */
+let ac=null;
+function beep(type){
+  if(!S.snd)return;
+  try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const seq=type==="ok"?[[660,.08],[990,.12]]:type==="ng"?[[220,.18]]:type==="lv"?[[523,.1],[659,.1],[784,.1],[1047,.25]]:[[880,.06],[1175,.06],[1568,.12]];
+    let t=ac.currentTime;seq.forEach(([f,d])=>{const o=ac.createOscillator(),g=ac.createGain();o.type="square";o.frequency.value=f;g.gain.setValueAtTime(.06,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d);t+=d})}catch(e){}
+}
+function burst(main,sub){const fx=$("#fx");fx.innerHTML=`<div class="burst"><div>${main}${sub?`<small>${sub}</small>`:""}</div></div>`;setTimeout(()=>{fx.innerHTML=""},1100)}
+
+/* ===== レベル計算 ===== */
+function lvOf(xp){let l=0;while(l<LV.length-1&&xp>=LV[l+1])l++;return l}
+function streak(){let n=0,d=TODAY();if(!S.days[dayStr(d)])d--;while(S.days[dayStr(d)]){n++;d--}return n}
+function dayStr(n){const t=new Date(n*864e5);return t.getUTCFullYear()+"-"+String(t.getUTCMonth()+1).padStart(2,"0")+"-"+String(t.getUTCDate()).padStart(2,"0")}
+function mastery(st){const qs=Q.filter(q=>q.st===st);const m=qs.filter(q=>(S.items[q.id]||{}).b>=3).length;return{m,t:qs.length,p:Math.round(m/qs.length*100)}}
+
+/* ===== 出題の組み立て ===== */
+const ORDER=["s1","s2","s3","s4","s5","cul","voc","lis","read"];
+function buildDaily(){
+  const t=TODAY(),plan=planToday();
+  const seen=Q.filter(q=>S.items[q.id]);
+  const due=seen.filter(q=>S.items[q.id].d<=t).sort((a,b)=>{const A=S.items[a.id],B=S.items[b.id];return(A.l===0?0:1)-(B.l===0?0:1)||A.b-B.b});
+  const set=[];const pushQ=q=>{if(set.length<20&&!set.includes(q)){if(q.st==="read"&&set.filter(x=>x.st==="read").length>=3)return;set.push(q)}};
+  due.slice(0,plan.review?20:12).forEach(pushQ);
+  if(plan.review){seen.slice().sort((a,b)=>S.items[a.id].b-S.items[b.id].b||S.items[b.id].w-S.items[a.id].w).forEach(pushQ)}
+  plan.st.forEach(st=>Q.filter(q=>q.st===st&&!S.items[q.id]).forEach(pushQ));
+  ORDER.forEach(st=>Q.filter(q=>q.st===st&&!S.items[q.id]).forEach(pushQ));
+  seen.slice().sort((a,b)=>S.items[a.id].b-S.items[b.id].b).forEach(pushQ);
+  return set;
+}
+function buildStage(st){
+  const qs=Q.filter(q=>q.st===st);
+  const un=qs.filter(q=>!S.items[q.id]);
+  const rest=qs.filter(q=>S.items[q.id]).sort((a,b)=>S.items[a.id].b-S.items[b.id].b);
+  return un.concat(rest).slice(0,st==="read"?9:10);
+}
+
+/* ===== 画面：ホーム ===== */
+function home(){
+  sess=null;speakStop();
+  const l=lvOf(S.xp),next=LV[l+1]||LV[l],cur=LV[l],pct=next>cur?Math.round((S.xp-cur)/(next-cur)*100):100;
+  const plan=planToday(),left=daysLeft(),td=S.days[ymd()];
+  const allSeen=Object.keys(S.items).length;
+  app.innerHTML=`
+  <div class="top">
+    <div class="logo"><span class="blk"><i style="background:var(--s)"></i><i style="background:var(--v)"></i><i style="background:var(--n)"></i><i style="background:var(--m)"></i></span>英語ブロックラボ</div>
+    <button class="iconbtn" id="snd" aria-label="効果音の切りかえ">${S.snd?ICON.sound:ICON.mute}</button>
+  </div>
+  <div class="panel lv">
+    <div class="emblem">${l+1}</div>
+    <div style="min-width:0">
+      <div class="sub">Lv.${l+1}</div>
+      <div class="ttl">${TITLES[l]}</div>
+      <div class="bar" style="margin-top:6px"><i style="width:${pct}%"></i></div>
+      <div class="sub" style="margin-top:2px">${l<LV.length-1?`次のレベルまで ${next-S.xp} XP`:"最高レベル"}</div>
+    </div>
+  </div>
+  <div class="count">
+    <div><b>${left>0?left:left===0?"今日":"-"}</b><span>${left>0?"テストまで（日）":left===0?"テスト当日":"テスト終了"}</span></div>
+    <div><b>${streak()}</b><span>連続日数</span></div>
+    <div><b>${allSeen}<small style="font-size:.6em">/${Q.length}</small></b><span>出会った問題</span></div>
+  </div>
+  <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+    <div class="theme"><b>今日のテーマ：</b>${plan.msg}</div>
+    ${td?`<div class="sub">今日はもう ${td.t} 問やりました（正解 ${td.c} 問）。もう1回やるとさらにXPがもらえます。</div>`:""}
+    <button class="btn primary" id="daily">今日の20問をはじめる</button>
+  </div>
+  <button class="stage" id="map" style="border:2px solid var(--accent)">
+    <span class="no" style="background:var(--accent)">0</span>
+    <span><span class="nm">英語の地図（まずはここから）</span><br><span class="sub">英語と日本語の順番のちがいを3分で</span></span>
+    <span class="pc">→</span>
+  </button>
+  <h3 style="font-size:1rem">ステージ（まなぶ → 練習10問）</h3>
+  <div class="stages">${STAGES.map((s,i)=>{const m=mastery(s.k);const f=plan.st.includes(s.k);return`
+    <button class="stage${f?" focus":""}" data-st="${s.k}">
+      <span class="no" style="background:${s.col}">${i<5?i+1:s.short.slice(0,1)}</span>
+      <span style="min-width:0"><span class="nm">${s.nm}</span>${f?' <span class="tag">今日</span>':""}<span class="bar" style="display:block"><i style="width:${m.p}%;background:${s.col}"></i></span></span>
+      <span class="pc">${m.m}/${m.t}</span>
+    </button>`}).join("")}</div>
+  ${(()=>{const u=Object.entries(S.unk||{}).sort((a,b)=>b[1]-a[1]).slice(0,12);return u.length?`<div class="panel"><h3 style="font-size:1rem;margin-bottom:4px">調べた単語</h3><div class="sub" style="margin-bottom:8px">タップで発音。何回も調べた単語ほど上に出ます。</div>${wordListHTML(u.map(x=>x[0]))}</div>`:""})()}
+  <div class="panel">
+    <h3 style="font-size:1rem;margin-bottom:8px">バッジ</h3>
+    <div class="badges">${BADGES.map(b=>`<span class="badge${S.badges[b.k]?" on":""}">${ICON.star}${b.nm}</span>`).join("")}</div>
+  </div>
+  <div class="row" style="justify-content:center"><button class="btn small" id="parent">保護者ページ</button></div>
+  <div class="sync" id="syncmsg">${GAS_URL?"記録は自動でおうちの人に届きます":"記録はこの端末の中に保存されます"}</div>`;
+  $("#daily").onclick=()=>startQuiz(buildDaily(),"今日の20問");
+  $("#map").onclick=()=>lesson("s0");
+  $("#parent").onclick=()=>parentView();
+  $("#snd").onclick=()=>{S.snd=!S.snd;save();home()};
+  app.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>lesson(b.dataset.st));
+  scrollTo(0,0);
+}
+function speakStop(){try{speechSynthesis.cancel()}catch(e){}}
+
+/* ===== 画面：まなぶ ===== */
+function lesson(st,idx){
+  idx=idx||0;const sl=LESSONS[st];const s=sl[idx];const info=st==="s0"?{nm:"英語の地図",col:"var(--accent)"}:stage(st);
+  const segs=s.segs?s.segs.map(x=>{const parts=x.split("　");return`<div>${segHTML(parts[0])}<div class="sub" style="margin-top:2px">${parts[1]||""}</div></div>`}).join(""):"";
+  app.innerHTML=`
+  <div class="top"><button class="iconbtn" id="bk" aria-label="もどる">${ICON.back}</button><span class="tag" style="background:var(--soft);color:var(--ink)">まなぶ ${idx+1}/${sl.length}</span><span style="width:40px"></span></div>
+  <div class="card slide">
+    <div class="sub" style="color:${info.col};font-weight:800">${info.nm}</div>
+    <h2 style="font-size:1.3rem">${s.h}</h2>
+    <p>${s.p}</p>
+    ${s.demo?demoHTML():""}
+    ${s.seg?`<div class="ex-box">${segHTML(s.seg)}<button class="spk" id="sp" style="align-self:flex-start">${ICON.spk}聞く</button></div>`:""}
+    ${segs?`<div class="ex-box">${segs}</div>`:""}
+    ${s.table?`<table class="tbl"><tr><th>先行詞</th><th>後ろが動詞<br>（主格）</th><th>後ろが主語＋動詞<br>（目的格）</th></tr><tr><td>人</td><td class="en">who / that</td><td class="en">that（省略できる）</td></tr><tr><td>もの・動物</td><td class="en">which / that</td><td class="en">which / that（省略できる）</td></tr></table>`:""}
+    ${s.legend?LEGEND:""}
+    <div class="dots">${sl.map((_,i)=>`<i class="${i===idx?"on":""}"></i>`).join("")}</div>
+  </div>
+  <div class="row" style="flex-wrap:nowrap">
+    ${idx>0?`<button class="btn" id="prev" style="flex:1">もどる</button>`:""}
+    <button class="btn primary" id="nx" style="flex:2">${idx<sl.length-1?"つぎへ":st==="s0"?"ステージ1をやってみる":"練習10問へ"}</button>
+  </div>`;
+  $("#bk").onclick=home;
+  if($("#prev"))$("#prev").onclick=()=>lesson(st,idx-1);
+  if($("#sp"))$("#sp").onclick=()=>speak(s.seg.replace(/\{\w\|([^}]+)\}/g,"$1"));
+  if(s.demo)setupDemo();
+  $("#nx").onclick=()=>{if(idx<sl.length-1)lesson(st,idx+1);else if(st==="s0")lesson("s1");else startQuiz(buildStage(st),stage(st).nm)};
+  scrollTo(0,0);
+}
+const DEMOS=[
+ {j:[["私が昨日買った","M"],["本","N"]],e:"{N|the book} {M|I bought yesterday}"},
+ {j:[["速く走れる","M"],["友達","N"]],e:"{N|a friend} {M|who can run fast}"},
+ {j:[["テーブルの上の","M"],["ペン","N"]],e:"{N|the pen} {M|on the table}"}
+];
+let demoI=0;
+function demoHTML(){return`<div class="ex-box" id="demo"></div>`}
+function setupDemo(){
+  const d=DEMOS[demoI%DEMOS.length];const box=$("#demo");
+  const col={M:"var(--m)",N:"var(--n)"},bg={M:"var(--m-soft)",N:"var(--n-soft)"};
+  box.innerHTML=`<div class="sub">日本語</div><div class="jrow">${d.j.map(([t,r])=>`<span class="jchip" style="border-color:${col[r]};background:${bg[r]}">${t}</span>`).join("")}</div>
+  <div class="sub">英語</div><div id="enrow" class="swap" style="opacity:0;transform:translateY(8px)">${segHTML(d.e)}</div>
+  <div class="row"><button class="btn small" id="go">英語にする</button><button class="btn small" id="nxd">ほかの例</button></div>`;
+  $("#go").onclick=()=>{const r=$("#enrow");r.style.opacity=1;r.style.transform="none";speak(d.e.replace(/\{\w\|([^}]+)\}/g,"$1"))};
+  $("#nxd").onclick=()=>{demoI++;setupDemo()};
+}
+
+/* ===== 画面：クイズ ===== */
+let sess=null;
+function startQuiz(list,label){
+  if(!list.length){home();return}
+  sess={list:list.slice(),label,i:0,c:0,t:0,combo:0,maxCombo:0,xp:0,requeued:{},wrong:[],first:{},startLv:lvOf(S.xp)};
+  showQ();
+}
+function showQ(){
+  speakStop();
+  const q=sess.list[sess.i];const st=stage(q.st);
+  sess.cur={q,answered:false};
+  const total=sess.list.length;
+  let body="";
+  if(q.p){const P=PASS[q.p];body+=`<div class="passage"><b>${wrapEn(P.ti)}</b><br>${wrapEn(P.tx)}<div class="notes">${P.nt}</div></div><button class="spk" id="psp" style="align-self:flex-start">${ICON.spk}本文を聞く</button>`}
+  if(q.say){body+=`<div class="play"><button class="bigplay" id="pl" aria-label="英文を聞く">${ICON.play}</button><button class="btn small" id="pls" style="align-self:center">ゆっくり</button></div>`}
+  if(q.t==="c"){
+    const opts=shuffle(q.o.map((t,i)=>({t,ok:i===0})));sess.cur.opts=opts;
+    const isEn=opts.every(x=>/^[A-Za-z(]/.test(x.t));
+    body+=`<div class="prompt">${esc(q.q)}</div>${q.en?`<div class="ensent">${wrapEn(q.en)}</div>`:""}
+    <div class="choices">${opts.map((x,i)=>`<button class="choice${isEn?" en":""}" data-i="${i}">${esc(x.t)}</button>`).join("")}</div>`;
+  }else if(q.t==="o"){
+    let pool=shuffle(q.b.map((t,i)=>({t,i})));let tries=0;while(pool.every((x,i)=>x.i===i)&&tries++<10)pool=shuffle(pool);
+    sess.cur.pool=pool;sess.cur.slot=[];
+    body+=`<div class="prompt">${esc(q.jp)}</div><div class="sub">ブロックをタップして、正しい順番に並べよう</div>
+    <div class="slot" id="slot"></div><div class="pool" id="pool"></div>
+    <button class="btn primary" id="go" disabled>こたえる</button>`;
+  }else{
+    const isVoc=q.st==="voc";
+    body+=`<div class="prompt">${esc(q.jp)}</div><div class="ensent">${isVoc?`<span class="sub">ヒント：</span>${esc(q.s)}（${q.a[0].length}文字）`:q.s.split(/_{3,}/).map(wrapEn).join('<span class="blank"></span>')}</div>
+    <input class="tin" id="tin" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="英語で入力">
+    <button class="btn primary" id="go">こたえる</button>`;
+  }
+  const qw=qWords(q,false);
+  const helpLine=`<div class="whelp">${qw.length?`<button class="wbtn" id="wb">わからない単語を見る（${qw.length}語）</button>`:""}<span class="sub">${q.p?"本文の単語はタップすると意味が出ます":"点線の単語はタップすると意味が出ます"}</span></div><div id="wl" hidden>${wordListHTML(qw)}</div>`;
+  body=body.replace(/(<div class="prompt">[\s\S]*?<\/div>)/,"$1"+helpLine);
+  if(!/class="prompt"/.test(body))body=helpLine+body;
+  app.innerHTML=`
+  <div class="qtop"><button class="iconbtn" id="bk" aria-label="やめる">${ICON.back}</button><div class="bar"><i style="width:${sess.i/total*100}%"></i></div><div class="combo" id="cb">${sess.combo>=2?sess.combo+" COMBO":""}</div></div>
+  <div class="row" style="justify-content:space-between"><span class="tag" style="background:var(--soft);color:${st.col}">${st.nm}</span><span class="sub">${sess.i+1} / ${total}</span></div>
+  <div class="card" id="card">${body}</div>
+  <div id="fbx"></div>`;
+  $("#bk").onclick=()=>{if(sess.t>0)finish();else home()};
+  if($("#wb"))$("#wb").onclick=()=>{const l=$("#wl");l.hidden=!l.hidden;$("#wb").textContent=l.hidden?`わからない単語を見る（${qw.length}語）`:"単語リストをとじる"};
+  if($("#psp"))$("#psp").onclick=()=>speak(PASS[q.p].tx);
+  if($("#pl")){$("#pl").onclick=()=>speak(q.say);$("#pls").onclick=()=>speak(q.say,true);setTimeout(()=>speak(q.say),300)}
+  if(q.t==="c")app.querySelectorAll(".choice").forEach(b=>b.onclick=()=>answerC(+b.dataset.i));
+  if(q.t==="o"){drawOrder();$("#go").onclick=answerO}
+  if(q.t==="y"){const t=$("#tin");t.focus();t.onkeydown=e=>{if(e.key==="Enter")answerY()};$("#go").onclick=answerY}
+  scrollTo(0,0);
+}
+function drawOrder(){
+  const c=sess.cur;
+  $("#slot").innerHTML=c.slot.map((x,i)=>`<button class="blk" data-s="${i}">${esc(x.t)}</button>`).join("");
+  $("#pool").innerHTML=c.pool.map((x,i)=>`<button class="blk" data-p="${i}">${esc(x.t)}</button>`).join("");
+  app.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{if(c.answered)return;c.slot.push(c.pool.splice(+b.dataset.p,1)[0]);beep("tap");drawOrder()});
+  app.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{if(c.answered)return;c.pool.push(c.slot.splice(+b.dataset.s,1)[0]);drawOrder()});
+  $("#go").disabled=c.pool.length>0;
+}
+const norm=s=>s.toLowerCase().replace(/[’‘]/g,"'").replace(/[.?!,]+$/,"").replace(/\s+/g," ").trim();
+function answerC(i){
+  const c=sess.cur;if(c.answered)return;
+  const ok=c.opts[i].ok;
+  app.querySelectorAll(".choice").forEach((b,j)=>{b.disabled=true;if(c.opts[j].ok)b.classList.add("ok");else if(j===i)b.classList.add("ng")});
+  judge(ok,c.opts.find(x=>x.ok).t);
+}
+function answerO(){
+  const c=sess.cur;if(c.answered)return;
+  const ok=c.slot.every((x,i)=>c.q.b[i]===x.t);
+  app.querySelectorAll("#slot .blk").forEach((b,i)=>b.classList.add(c.q.b[i]===c.slot[i].t?"ok":"ng"));
+  $("#go").hidden=true;
+  judge(ok,c.q.b.join(" ")+(c.q.b.join(" ").match(/[?.!]$/)?"":(/^(Do|Is|What|Can|Who)\b/.test(c.q.b[0])?"?":".")));
+}
+function answerY(){
+  const c=sess.cur;if(c.answered)return;
+  const v=norm($("#tin").value);if(!v)return;
+  const ok=c.q.a.some(a=>norm(a)===v);
+  $("#tin").disabled=true;$("#go").hidden=true;
+  $("#tin").style.borderColor=ok?"var(--ok)":"var(--ng)";
+  judge(ok,c.q.a.join(" / "));
+}
+function judge(ok,correct){
+  const c=sess.cur,q=c.q;c.answered=true;
+  const first=!sess.first[q.id];sess.first[q.id]=true;
+  const it=S.items[q.id]||{b:0,s:0,c:0,w:0,d:0,l:1};
+  if(first){
+    sess.t++;it.s++;
+    if(ok){sess.c++;it.c++;it.b=Math.min(it.b+1,5);it.l=1}else{it.w++;it.b=0;it.l=0;sess.wrong.push(q.id)}
+    it.d=TODAY()+INTERVAL[it.b];S.items[q.id]=it;S.total++;
+  }
+  let gain=0;
+  if(ok){sess.combo++;sess.maxCombo=Math.max(sess.maxCombo,sess.combo);gain=first?10+(sess.combo>=3?5:0):3}
+  else{sess.combo=0;if(!sess.requeued[q.id]){sess.requeued[q.id]=1;sess.list.push(q)}}
+  sess.xp+=gain;S.xp+=gain;
+  beep(ok?"ok":"ng");
+  if(ok&&[3,5,10,15,20].includes(sess.combo)){burst(sess.combo+" COMBO!",sess.combo>=10?"止まらない！":sess.combo>=5?"いい流れ！":"その調子！");beep("combo")}
+  $("#cb").textContent=sess.combo>=2?sess.combo+" COMBO":"";
+  save();
+  const st=stage(q.st);const [w,j,m]=(q.ex||"").split("|");
+  const say=sayText(q);
+  $("#fbx").innerHTML=`
+  <div class="fb ${ok?"ok":"ng"}">
+    <div class="stamp">${ok?"せいかい！":"おしい！"}<span class="sub" style="font-family:var(--font-ui)">${ok&&gain?"+"+gain+" XP":""}</span></div>
+    ${ok?"":`<div><div class="sub">正しい答え</div><div class="ans">${wrapEn(correct)}</div></div>`}
+    ${q.seg?`<div>${segHTML(q.seg)}</div>`:""}
+    ${say?`<button class="spk" id="fsp" style="align-self:flex-start">${ICON.spk}英文を聞く</button>`:""}
+    <div class="exp">
+      <div><b>なぜ？</b>${esc(w||"")}</div>
+      <div><b>日本語とのちがい</b>${esc(j||st.jp)}</div>
+      ${m?`<div><b>よくあるまちがい</b>${esc(m)}</div>`:""}
+    </div>
+    ${(()=>{const aw=qWords(q,true);return aw.length?`<details class="wd"${ok?"":" open"}><summary>この問題の単語（${aw.length}語）</summary>${wordListHTML(aw)}</details>`:""})()}
+    ${!ok?`<div class="sub">この問題は、あとでもう一度出ます。</div>`:""}
+    <button class="btn primary" id="nq">${sess.i+1<sess.list.length?"つぎへ":"結果を見る"}</button>
+  </div>`;
+  if($("#fsp"))$("#fsp").onclick=()=>speak(say);
+  $("#nq").onclick=()=>{sess.i++;if(sess.i<sess.list.length)showQ();else finish()};
+  setTimeout(()=>$("#fbx").scrollIntoView({behavior:"smooth",block:"start"}),60);
+}
+
+/* ===== 画面：結果 ===== */
+function finish(){
+  speakStop();
+  const d=ymd();const dd=S.days[d]||{c:0,t:0,n:0};dd.c+=sess.c;dd.t+=sess.t;dd.n++;S.days[d]=dd;
+  S.bestCombo=Math.max(S.bestCombo,sess.maxCombo);
+  const newB=[];const giv=k=>{if(!S.badges[k]){S.badges[k]=d;newB.push(BADGES.find(b=>b.k===k).nm)}};
+  giv("first");const sk=streak();if(sk>=3)giv("st3");if(sk>=7)giv("st7");
+  if(sess.t>=10&&sess.c===sess.t)giv("perfect");if(sess.maxCombo>=10)giv("combo10");
+  ["s2","s3","s4","s5"].forEach(k=>{if(mastery(k).p===100)giv("m_"+k)});
+  if(S.total>=200)giv("q200");
+  const pct=sess.t?Math.round(sess.c/sess.t*100):0;
+  const entry={d,at:new Date().toISOString(),mode:sess.label,c:sess.c,t:sess.t,pct,wrong:sess.wrong.slice(0,20)};
+  S.log.push(entry);S.log=S.log.slice(-60);
+  save();
+  const l=lvOf(S.xp),up=l>sess.startLv;
+  app.innerHTML=`
+  <div class="card" style="text-align:center;align-items:center">
+    <div class="sub">${esc(sess.label)}</div>
+    <div class="big">${sess.c}<span style="font-size:.45em">/${sess.t}</span></div>
+    <div class="sub">正答率 ${pct}%　最大 ${sess.maxCombo} コンボ　+${sess.xp} XP</div>
+    ${up?`<div class="panel" style="width:100%;border:2px solid var(--n)"><div class="dot" style="font-size:1.2rem">LEVEL UP!</div><div>Lv.${l+1}「${TITLES[l]}」になった！</div></div>`:""}
+    ${newB.length?`<div style="width:100%"><div class="sub">新しいバッジ</div><div class="badges" style="justify-content:center">${newB.map(n=>`<span class="badge on">${ICON.star}${n}</span>`).join("")}</div></div>`:""}
+    ${sess.wrong.length?`<div class="sub">まちがえた ${sess.wrong.length} 問は、明日の復習に自動で入ります。</div>`:`<div class="sub">全問正解！ 明日はさらにレベルの高い問題が出ます。</div>`}
+  </div>
+  <button class="btn primary" id="again">もう1回（10問）</button>
+  <button class="btn" id="hm">ホームへ</button>
+  <div class="sync" id="syncmsg">${GAS_URL?"記録を送っています…":""}</div>`;
+  if(up){beep("lv");burst("LEVEL UP!",TITLES[l])}
+  $("#again").onclick=()=>startQuiz(buildDaily().slice(0,10),"もう1回");
+  $("#hm").onclick=home;
+  pushRemote(entry);
+}
+
+/* ===== 自動記録（Apps Script） ===== */
+async function pushRemote(entry){
+  if(!GAS_URL)return;
+  try{
+    await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({state:S,log:entry})});
+    const m=$("#syncmsg");if(m)m.textContent="記録をおうちの人に送りました";
+  }catch(e){const m=$("#syncmsg");if(m)m.textContent="記録を送れませんでした。次回まとめて送ります"}
+}
+async function pullRemote(){
+  if(!GAS_URL)return null;
+  try{const r=await fetch(GAS_URL+"?t="+Date.now());const j=await r.json();return j&&j.items?Object.assign(blank(),j):null}catch(e){return null}
+}
+
+/* ===== 保護者ページ ===== */
+async function parentView(){
+  speakStop();
+  app.innerHTML=`<div class="top"><button class="iconbtn" id="bk" aria-label="もどる">${ICON.back}</button><h2 style="font-size:1.1rem">保護者ページ</h2><span style="width:40px"></span></div><div class="panel sub">読み込み中…</div>`;
+  $("#bk").onclick=home;
+  const R=(await pullRemote())||S;
+  const t=TODAY();const days=[];for(let i=13;i>=0;i--){const k=dayStr(t-i);days.push({k,v:R.days[k]})}
+  const lastLog=R.log.slice(-8).reverse();
+  const weak=Q.filter(q=>R.items[q.id]&&R.items[q.id].w>0).sort((a,b)=>R.items[b.id].w-R.items[a.id].w||R.items[a.id].b-R.items[b.id].b).slice(0,10);
+  const sk=(()=>{let n=0,d=t;if(!R.days[dayStr(d)])d--;while(R.days[dayStr(d)]){n++;d--}return n})();
+  const td=R.days[ymd()];
+  const mast=k=>{const qs=Q.filter(q=>q.st===k);const m=qs.filter(q=>(R.items[q.id]||{}).b>=3).length;const s=qs.filter(q=>R.items[q.id]).length;return{m,s,t:qs.length}};
+  const qtext=q=>q.t==="o"?q.jp+" → "+q.b.join(" "):q.t==="y"?q.jp+" → "+q.a[0]:(q.en||q.q)+" → "+q.o[0];
+  app.innerHTML=`
+  <div class="top"><button class="iconbtn" id="bk" aria-label="もどる">${ICON.back}</button><h2 style="font-size:1.1rem">保護者ページ</h2><span style="width:40px"></span></div>
+  <div class="count">
+    <div><b>${daysLeft()>0?daysLeft():"-"}</b><span>テストまで（日）</span></div>
+    <div><b>${sk}</b><span>連続日数</span></div>
+    <div><b>${td?Math.round(td.c/td.t*100)+"%":"-"}</b><span>今日の正答率</span></div>
+  </div>
+  <div class="panel">
+    <h3 style="font-size:.95rem;margin-bottom:10px">2週間の正答率</h3>
+    <div class="chart">${days.map(d=>d.v?`<div style="height:${Math.max(4,Math.round(d.v.c/d.v.t*100))}%" title="${d.k} ${d.v.c}/${d.v.t}"></div>`:`<div class="none"></div>`).join("")}</div>
+    <div class="clabels">${days.map(d=>`<span>${+d.k.slice(8)}</span>`).join("")}</div>
+  </div>
+  <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+    <h3 style="font-size:.95rem">分野ごとの習得（★＝3回以上続けて正解）</h3>
+    ${STAGES.map(s=>{const m=mast(s.k);return`<div><div class="row" style="justify-content:space-between"><span style="font-size:.9rem;font-weight:700">${s.nm}</span><span class="sub" style="font-variant-numeric:tabular-nums">★${m.m}／解いた${m.s}／全${m.t}</span></div><div class="bar"><i style="width:${Math.round(m.m/m.t*100)}%;background:${s.col}"></i></div></div>`}).join("")}
+  </div>
+  <div class="panel">
+    <h3 style="font-size:.95rem;margin-bottom:8px">苦手な問題（まちがえた回数が多い順）</h3>
+    <div class="weak">${weak.length?weak.map(q=>`<div><span class="tag">${stage(q.st).short} ×${R.items[q.id].w}</span><div class="en">${esc(qtext(q))}</div></div>`).join(""):'<div class="sub">まだありません</div>'}</div>
+  </div>
+  <div class="panel">
+    <h3 style="font-size:.95rem;margin-bottom:8px">意味を調べた単語（回数が多い順）</h3>
+    <div class="weak">${Object.keys(R.unk||{}).length?Object.entries(R.unk).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([k,n])=>`<div><span class="en" style="font-weight:700">${esc(k)}</span>　${esc(lookup(k)||"")}　<span class="sub">×${n}</span></div>`).join(""):'<div class="sub">まだありません</div>'}</div>
+  </div>
+  <div class="panel">
+    <h3 style="font-size:.95rem;margin-bottom:8px">最近の記録</h3>
+    <div class="weak">${lastLog.length?lastLog.map(e=>`<div>${e.d}　${esc(e.mode)}　<b>${e.c}/${e.t}</b>（${e.pct}%）</div>`).join(""):'<div class="sub">まだありません</div>'}</div>
+  </div>
+  <div class="note">${GAS_URL?"息子さんのスマホの最新の記録を表示しています。":"今はこの端末の記録を表示しています（自動記録の設定前）。"}</div>`;
+  $("#bk").onclick=home;
+}
+
+/* ===== 起動 ===== */
+const app=$("#app");
+(async function boot(){
+  const isParent=new URLSearchParams(location.search).get("view")==="parent"||location.hash==="#parent";
+  if(isParent){parentView();return}
+  home();
+  const R=await pullRemote();
+  if(R&&(R.upd||0)>(S.upd||0)){S=R;save();if(!sess)home()}
+})();
+</script>
