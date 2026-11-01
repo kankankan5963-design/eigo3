@@ -671,7 +671,8 @@ function wordListHTML(ws){return`<div class="wlist">${ws.map(k=>`<button class="
 function qWords(q,after){
   if(q.p&&!after)return[];
   const hide=new Set();
-  if(!after){(q.o||[]).concat(q.a||[]).join(" ").split(/[^A-Za-z']+/).forEach(t=>t&&hide.add(wkey(t)))}
+  if(!after&&!q.noHide){(q.o||[]).concat(q.a||[]).join(" ").split(/[^A-Za-z']+/).forEach(t=>t&&hide.add(wkey(t)))}
+  if(!after&&q.noHide&&q.t==="c"){return wordsIn([q.o[0]])}
   const texts=[q.en,q.t==="y"&&q.st!=="voc"?q.s:null,...(q.b||[])];
   if(after)texts.push(q.say,q.seg,...(q.o||[]),...(q.a||[]),q.st==="voc"&&q.t==="c"?q.q.split(" の意味")[0]:null);
   else if(q.st!=="lis")texts.push(q.say);
@@ -767,7 +768,7 @@ function buildDaily(){
   plan.st.forEach(st=>Q.filter(q=>q.st===st&&!S.items[q.id]).forEach(pushQ));
   ORDER.forEach(st=>Q.filter(q=>q.st===st&&!S.items[q.id]).forEach(pushQ));
   seen.slice().sort((a,b)=>S.items[a.id].b-S.items[b.id].b).forEach(pushQ);
-  return set;
+  return withVariants(set,5);
 }
 function buildStage(st){
   const qs=Q.filter(q=>q.st===st);
@@ -775,6 +776,52 @@ function buildStage(st){
   const rest=qs.filter(q=>S.items[q.id]).sort((a,b)=>S.items[a.id].b-S.items[b.id].b);
   return un.concat(rest).slice(0,st==="read"?9:10);
 }
+
+/* ===== まちがえた問題の「形を変えた問題」「にた問題」 ===== */
+const endP=b=>b.join(" ").match(/[?.!]$/)?"":(/^(Do|Did|Is|Are|What|Where|Can|Who)\b/.test(b[0])?"?":".");
+const cap1=t=>t.charAt(0).toUpperCase()+t.slice(1);
+function genVariants(q){
+  const out=[];if(q.t!=="o")return out;
+  const low=x=>/^(The|A|An|This|That|These|My|Our|He|She|We|They|It|There|Is|Are|Do|Did|Where|What|Can|Who)\b/.test(x)?x.charAt(0).toLowerCase()+x.slice(1):x;
+  const end=endP(q.b),sent=b=>cap1(b.map((x,i)=>i===0?x:low(x)).join(" "))+end,right=q.b.join(" ")+end;
+  const ds=new Set();
+  for(let i=0;i<q.b.length-1;i++){const b=q.b.slice();[b[i],b[i+1]]=[b[i+1],b[i]];ds.add(sent(b))}
+  {const b=q.b.slice();b.push(b.shift());ds.add(sent(b))}
+  {const b=q.b.slice();b.unshift(b.pop());ds.add(sent(b))}
+  ds.delete(right);ds.delete(cap1(right));
+  const d=shuffle([...ds]).slice(0,3);
+  if(d.length>=2)out.push({t:"c",st:q.st,id:q.id+"~c",base:q.id,q:"正しい英文はどれ？「"+q.jp+"」",o:[right,...d],ex:q.ex,seg:q.seg,noHide:1});
+  let k=q.b.findIndex(x=>/^(who|which|that)$/i.test(x));
+  if(k<0){const v=(q.seg||"").match(/\{V\|([^}]+)\}/);if(v)k=q.b.findIndex(x=>x===v[1])}
+  if(k<0||q.b[k].split(" ").length>2)k=q.b.findIndex((x,i)=>i>0&&x.split(" ").length<=2);
+  if(k>=0)out.push({t:"y",st:q.st,id:q.id+"~y",base:q.id,jp:q.jp,s:q.b.map((x,i)=>i===k?"___":x).join(" ")+end,a:[q.b[k]],ex:q.ex,seg:q.seg});
+  return out;
+}
+function sibling(q){
+  const shape=x=>(x.seg||"").trim().startsWith("{N|");
+  const inList=new Set(sess.list.map(x=>x.id));
+  const c=Q.filter(x=>x.st===q.st&&x.id!==q.id&&!inList.has(x.id));
+  if(!c.length)return null;
+  const sc=x=>(shape(x)===shape(q)?3:0)+(x.t===q.t?1:0)+(!S.items[x.id]?1:0)+((S.items[x.id]||{}).w?2:0)+Math.random()*1.5;
+  return c.sort((a,b)=>sc(b)-sc(a))[0];
+}
+function insertAt(q,off,tag){const pos=Math.min(sess.i+1+off,sess.list.length);sess.list.splice(pos,0,q);if(tag)sess.tag[q.id]=tag}
+function requeue(q){
+  sess.miss[q.id]=(sess.miss[q.id]||0)+1;
+  const room=sess.list.length<50;
+  const baseQ=q.base?Q.find(x=>x.id===q.base):q;
+  if(sess.miss[q.id]===1&&!q.base&&room){
+    const v=genVariants(baseQ);if(v.length)insertAt(v[Math.floor(Math.random()*v.length)],1,"形を変えて");
+    const sb=sibling(baseQ);if(sb)insertAt(sb,5,"にた問題");
+  }
+  insertAt(q,room?3:1,"もう一度");
+}
+const weakItems=()=>Q.filter(q=>{const it=S.items[q.id];return it&&it.w>0&&it.b<3}).sort((a,b)=>S.items[b.id].w-S.items[a.id].w);
+function withVariants(list,max){
+  const vs=[];list.forEach(q=>{const it=S.items[q.id];if(vs.length<max&&it&&it.w>0&&it.b<3){const v=genVariants(q);if(v.length)vs.push(v[Math.floor(Math.random()*v.length)])}});
+  return list.concat(shuffle(vs));
+}
+function buildWeak(){const w=weakItems().slice(0,10);return w.concat(shuffle(w.flatMap(q=>genVariants(q).slice(0,1))))}
 
 /* ===== 画面：ホーム ===== */
 function home(){
@@ -805,6 +852,7 @@ function home(){
     <div class="theme"><b>今日のテーマ：</b>${plan.msg}</div>
     ${td?`<div class="sub">今日はもう ${td.t} 問やりました（正解 ${td.c} 問）。もう1回やるとさらにXPがもらえます。</div>`:""}
     <button class="btn primary" id="daily">今日の20問をはじめる</button>
+    ${weakItems().length?`<button class="btn" id="weak" style="border:2px solid var(--ng)">苦手こくふく（${weakItems().length}問）</button><div class="sub">まちがえた問題と、その形を変えた問題に挑戦。3日続けて正解すると苦手から外れます。</div>`:""}
   </div>
   <button class="stage" id="map" style="border:2px solid var(--accent)">
     <span class="no" style="background:var(--accent)">0</span>
@@ -831,6 +879,7 @@ function home(){
   <div class="row" style="justify-content:center"><button class="btn small" id="parent">保護者ページ</button></div>
   <div class="sync" id="syncmsg">${GAS_URL?"記録は自動でおうちの人に届きます":"記録はこの端末の中に保存されます"}</div>`;
   $("#daily").onclick=()=>startQuiz(buildDaily(),"今日の20問");
+  if($("#weak"))$("#weak").onclick=()=>startQuiz(buildWeak(),"苦手こくふく");
   $("#map").onclick=()=>lesson("s0");
   $("#parent").onclick=()=>parentView();
   $("#snd").onclick=()=>{S.snd=!S.snd;save();home()};
@@ -890,7 +939,7 @@ function setupDemo(){
 let sess=null;
 function startQuiz(list,label){
   if(!list.length){home();return}
-  sess={list:list.slice(),label,i:0,c:0,t:0,combo:0,maxCombo:0,xp:0,requeued:{},wrong:[],first:{},startLv:lvOf(S.xp)};
+  sess={list:list.slice(),label,i:0,c:0,t:0,combo:0,maxCombo:0,xp:0,miss:{},tag:{},fixed:{},wrong:[],first:{},startLv:lvOf(S.xp)};
   showQ();
 }
 function showQ(){
@@ -924,7 +973,7 @@ function showQ(){
   if(!/class="prompt"/.test(body))body=helpLine+body;
   app.innerHTML=`
   <div class="qtop"><button class="iconbtn" id="bk" aria-label="やめる">${ICON.back}</button><div class="bar"><i style="width:${sess.i/total*100}%"></i></div><div class="combo" id="cb">${sess.combo>=2?sess.combo+" COMBO":""}</div></div>
-  <div class="row" style="justify-content:space-between"><span class="tag" style="background:var(--soft);color:${st.col}">${st.nm}</span><span class="sub">${sess.i+1} / ${total}</span></div>
+  <div class="row" style="justify-content:space-between"><span class="row" style="gap:6px"><span class="tag" style="background:var(--soft);color:${st.col}">${st.nm}</span>${(sess.tag[q.id]||(q.base?"形を変えて":""))?`<span class="tag" style="background:var(--n-soft);color:var(--ink)">${sess.tag[q.id]||"形を変えて"}</span>`:""}</span><span class="sub">${sess.i+1} / ${total}</span></div>
   <div class="card" id="card">${body}</div>
   <div id="fbx"></div>`;
   $("#bk").onclick=()=>{if(sess.t>0)finish();else home()};
@@ -969,15 +1018,19 @@ function answerY(){
 function judge(ok,correct){
   const c=sess.cur,q=c.q;c.answered=true;
   const first=!sess.first[q.id];sess.first[q.id]=true;
-  const it=S.items[q.id]||{b:0,s:0,c:0,w:0,d:0,l:1};
   if(first){
-    sess.t++;it.s++;
-    if(ok){sess.c++;it.c++;it.b=Math.min(it.b+1,5);it.l=1}else{it.w++;it.b=0;it.l=0;sess.wrong.push(q.id)}
-    it.d=TODAY()+INTERVAL[it.b];S.items[q.id]=it;S.total++;
+    sess.t++;S.total++;
+    if(ok)sess.c++;else{const bid=q.base||q.id;if(!sess.wrong.includes(bid))sess.wrong.push(bid)}
+    if(!q.base){
+      const it=S.items[q.id]||{b:0,s:0,c:0,w:0,d:0,l:1};it.s++;
+      if(ok){it.c++;it.b=Math.min(it.b+1,5);it.l=1}else{it.w++;it.b=0;it.l=0}
+      it.d=TODAY()+INTERVAL[it.b];S.items[q.id]=it;
+    }
   }
+  if(ok&&sess.miss[q.id])sess.fixed[q.base||q.id]=1;
   let gain=0;
   if(ok){sess.combo++;sess.maxCombo=Math.max(sess.maxCombo,sess.combo);gain=first?10+(sess.combo>=3?5:0):3}
-  else{sess.combo=0;if(!sess.requeued[q.id]){sess.requeued[q.id]=1;sess.list.push(q)}}
+  else{sess.combo=0;requeue(q)}
   sess.xp+=gain;S.xp+=gain;
   beep(ok?"ok":"ng");
   if(ok&&[3,5,10,15,20].includes(sess.combo)){burst(sess.combo+" COMBO!",sess.combo>=10?"止まらない！":sess.combo>=5?"いい流れ！":"その調子！");beep("combo");if(sess.combo>=10)confetti()}
@@ -997,7 +1050,7 @@ function judge(ok,correct){
       ${m?`<div><b>よくあるまちがい</b>${esc(m)}</div>`:""}
     </div>
     ${(()=>{const aw=qWords(q,true);return aw.length?`<details class="wd"${ok?"":" open"}><summary>この問題の単語（${aw.length}語）</summary>${wordListHTML(aw)}</details>`:""})()}
-    ${!ok?`<div class="sub">この問題は、あとでもう一度出ます。</div>`:""}
+    ${!ok?`<div class="sub" style="font-weight:700">正解できるまで、この問題はくり返し出ます。形を変えた問題やにた問題も出るよ。</div>`:sess.miss[q.id]?`<div class="sub" style="font-weight:700;color:var(--ok)">さっきまちがえた問題、クリア！</div>`:""}
     <button class="btn primary" id="nq">${sess.i+1<sess.list.length?"つぎへ":"結果を見る"}</button>
   </div>`;
   if($("#fsp"))$("#fsp").onclick=()=>speak(say);
@@ -1029,7 +1082,8 @@ function finish(){
     <div class="sub">正答率 ${pct}%　最大 ${sess.maxCombo} コンボ　+${sess.xp} XP</div>
     ${up?`<div class="panel" style="width:100%;border:2px solid var(--n)"><div style="width:84px;margin:0 auto">${sprite(l)}</div><div class="dot" style="font-size:1.2rem">LEVEL UP!</div><div>Lv.${l+1}「${TITLES[l]}」になった！</div></div>`:""}
     ${newB.length?`<div style="width:100%"><div class="sub">新しいバッジ</div><div class="badges" style="justify-content:center">${newB.map(n=>`<span class="badge on">${ICON.star}${n}</span>`).join("")}</div></div>`:""}
-    ${sess.wrong.length?`<div class="sub">まちがえた ${sess.wrong.length} 問は、明日の復習に自動で入ります。</div>`:`<div class="sub">全問正解！ 明日はさらにレベルの高い問題が出ます。</div>`}
+    ${Object.keys(sess.fixed).length?`<div class="sub" style="color:var(--ok);font-weight:800">くり返して克服した問題：${Object.keys(sess.fixed).length}問</div>`:""}
+    ${sess.wrong.length?`<div class="sub">まちがえた ${sess.wrong.length} 問は、明日も形を変えて出ます。3日続けて正解するまで「苦手」として追いかけます。</div>`:`<div class="sub">全問正解！ 明日はさらにレベルの高い問題が出ます。</div>`}
   </div>
   ${wst.length?`<div class="panel" style="display:flex;flex-direction:column;gap:10px;border:2px solid var(--n)">
     <h3 style="font-size:1rem">図でふりかえろう</h3>
